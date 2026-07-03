@@ -41,6 +41,8 @@ model User {
   workspacesCount Int?     @default(1)
   workspacesLimit Int?     @default(2)
 
+  projectMembers ProjectMember[]
+
   @@unique([email])
   @@map("user")
 }
@@ -152,6 +154,8 @@ model Organization {
 
   additionalSystemTokenUsage Int? @default(0)
   additionalImageTokenUsage  Int? @default(0)
+
+  projects Project[]
 
   @@unique([slug])
   @@map("organization")
@@ -271,6 +275,42 @@ model TopUpPurchase {
 
   @@index([workspaceId, createdAt])
   @@map("top_up_purchases")
+}
+
+model Project {
+  id             String    @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  slug           String
+  description    String?
+  status         String    @default("active") // "active" | "archived"
+  archivedAt     DateTime?
+  deletedAt      DateTime?
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  members        ProjectMember[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([organizationId, deletedAt])
+  @@map("project")
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("member") // "owner" | "member" | "viewer"
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@map("project_member")
 }
 
 model ContactMessage {

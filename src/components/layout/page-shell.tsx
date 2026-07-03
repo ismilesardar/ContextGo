@@ -12,6 +12,8 @@ export interface PageShellProps {
   description?: string;
   /** Optional action buttons/elements in the header */
   actions?: ReactNode;
+  /** Show today's date in the header, next to actions (default: true) */
+  showDate?: boolean;
   /** Loading state — shows skeleton */
   isLoading?: boolean;
   /** Custom skeleton to render during loading. Falls back to a default if omitted. */
@@ -40,6 +42,7 @@ export function PageShell({
   title,
   description,
   actions,
+  showDate = true,
   isLoading,
   skeleton,
   isError,
@@ -105,7 +108,9 @@ export function PageShell({
             title={title}
             description={description}
             actions={actions}
+            showDate={showDate}
           />
+          {children}
           <div className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-300 p-16 text-center dark:border-neutral-700'>
             <div className='mb-3 flex size-12 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800'>
               <IconInbox className='size-6 text-neutral-400' />
@@ -122,7 +127,12 @@ export function PageShell({
   return (
     <PageContainer>
       <div className={`mx-auto w-full ${maxWidth} space-y-8 p-6`}>
-        <PageHeader title={title} description={description} actions={actions} />
+        <PageHeader
+          title={title}
+          description={description}
+          actions={actions}
+          showDate={showDate}
+        />
         {hero && <div>{hero}</div>}
         {children}
       </div>
@@ -135,11 +145,13 @@ export function PageShell({
 function PageHeader({
   title,
   description,
-  actions
+  actions,
+  showDate = true
 }: {
   title: string;
   description?: string;
   actions?: ReactNode;
+  showDate?: boolean;
 }) {
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -160,9 +172,9 @@ function PageHeader({
       </div>
       <div className='flex shrink-0 items-center gap-3'>
         {actions}
-        <time className='text-muted-foreground hidden pt-1 text-sm sm:block'>
-          {today}
-        </time>
+        {showDate && (
+          <time className='text-muted-foreground pt-1 text-sm'>{today}</time>
+        )}
       </div>
     </div>
   );

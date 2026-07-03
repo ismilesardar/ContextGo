@@ -17,6 +17,24 @@ export const pinnedNavItems: NavItem[] = [
     isAdmin: false,
     shortcut: ['d', 'd'],
     items: []
+  },
+  {
+    title: 'Projects',
+    url: '/projects',
+    icon: 'layout',
+    isActive: false,
+    isAdmin: false,
+    shortcut: ['p', 'p'],
+    items: []
+  },
+  {
+    title: 'Archived',
+    url: '/projects/archived',
+    icon: 'restore',
+    isActive: false,
+    isAdmin: false,
+    shortcut: ['a', 'a'],
+    items: []
   }
 ];
 

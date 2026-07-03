@@ -226,16 +226,19 @@ Global Sidebar:
 - Marketplace
 - Organization Settings
 
-Project Navigation:
+Project Navigation (horizontal top nav inside the content area, not the sidebar):
 
-- Overview
 - Contexts
 - Instructions
 - Skills
+- Prompt Templates
+- Checklists
 - Agent Profiles
 - Approvals
+- MCP
 - Activity
-- Project Settings
+
+Project Settings is not one of the tabs above — it's a separate gear icon in the Project Workspace header, next to the project name.
 
 Use:
 

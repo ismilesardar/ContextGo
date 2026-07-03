@@ -12,7 +12,7 @@ import { Organization } from 'better-auth/plugins';
 import Link from 'next/link';
 import { useCallback, useContext, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { getActiveWorkspace } from '@/lib/api/workspace/get-workspace-details';
 import { BlurImage } from '@/components/ui/blur-image';
 import { cn } from '@/lib/utils';
@@ -89,10 +89,6 @@ function WorkspaceList({
   setOpenPopover: (open: boolean) => void;
 }) {
   const { setShowAddWorkspaceModal } = useContext(ModalContext);
-  const { link, programId } = useParams() as {
-    link: string | string[];
-    programId?: string;
-  };
 
   const router = useRouter();
   const pathname = usePathname();
@@ -106,84 +102,90 @@ function WorkspaceList({
 
   const href = useCallback(
     (slug: string) => {
-      if (link) {
-        // if we're on a link page, navigate back to the workspace root
-        return `/${slug}/overview`;
-      } else if (activeWorkspace?.slug) {
-        // else, we keep the path but remove all query params
-        return (
-          pathname.replace(activeWorkspace.slug, slug).split('?')[0] || '/'
-        );
-      } else {
-        return '/';
+      const segments = pathname.split('/').filter(Boolean);
+      const isWorkspaceScoped = workspaces.some((w) => w.slug === segments[0]);
+
+      if (isWorkspaceScoped) {
+        // keep the rest of the path, swap only the workspace slug segment
+        segments[0] = slug;
+        return `/${segments.join('/')}`;
       }
+      // global routes (/account, /system-admin, /workspaces/*) have no
+      // workspace-scoped equivalent — land on the new workspace's home page
+      return `/${slug}/overview`;
     },
-    [link, programId, pathname, activeWorkspace?.slug]
+    [pathname, workspaces]
   );
 
   async function handleSwitchWorkspace(workspace: Organization) {
-    if (workspace) {
-      // Signal all pages to show loading skeletons
-      setSwitchingWorkspace(true);
-      setActiveWorkspaceName(workspace.slug);
+    if (!workspace || !user) return;
 
-      const { data: activeWorkspaceData, error } = await getActiveWorkspace({
-        slug: workspace.slug
-      });
+    // Signal all pages to show loading skeletons
+    setSwitchingWorkspace(true);
+    setActiveWorkspaceName(workspace.slug);
 
-      if (error) {
-        // return window.location.reload();
-        if (error?.code === 'USER_IS_NOT_A_MEMBER_OF_THE_ORGANIZATION') {
-          toast.error('Access denied! you are not part of the workspace.');
+    // Commit the new active organization server-side FIRST. Dependent
+    // queries (billing, projects, members, ...) key off `activeWorkspace.id`
+    // in the Zustand store — if we updated that store before the session
+    // committed, those queries would race ahead and fetch data for the OLD
+    // workspace under the NEW workspace's query key.
+    const { error: setActiveError } = await authClient.organization.setActive({
+      organizationId: workspace.id
+    });
 
-          const fallbackSlug = user?.defaultWorkspace;
+    if (setActiveError) {
+      setSwitchingWorkspace(false);
 
-          if (fallbackSlug) {
-            // Send to their actual workspace
-            window.location.href = `/${fallbackSlug}/overview`;
-          } else {
-            // If they deleted their last workspace, send to onboarding
-            window.location.href = '/onboarding/workspace';
-          }
+      if (setActiveError.code === 'USER_IS_NOT_A_MEMBER_OF_THE_ORGANIZATION') {
+        toast.error('Access denied! you are not part of the workspace.');
+
+        const fallbackSlug = user?.defaultWorkspace;
+
+        if (fallbackSlug) {
+          // Send to their actual workspace
+          window.location.href = `/${fallbackSlug}/overview`;
+        } else {
+          // If they deleted their last workspace, send to onboarding
+          window.location.href = '/onboarding/workspace';
         }
+      } else {
+        toast.error(setActiveError.message || 'Failed to switch workspace');
       }
-
-      if (activeWorkspaceData && user) {
-        // set active workspace in backend to update user session
-        await authClient.organization.setActive(
-          { organizationId: workspace.id },
-          {
-            onSuccess: async () => {
-              // Find the current user's role in this workspace
-              // const currentMember = activeWorkspaceData.members.find(
-              //   (m: any) => m.userId === user.id
-              // );
-              const { data: currentMember } =
-                await authClient.organization.getActiveMember();
-
-              addActiveMember(currentMember || null);
-              refreshPlans(activeWorkspaceData.id);
-
-              // Invalidate all React Query caches — every feature refetches for the new workspace
-              queryClient.invalidateQueries();
-
-              // Clear switching state after queries have had time to refetch
-              setTimeout(() => {
-                setSwitchingWorkspace(false);
-              }, 2000);
-
-              Cookies.set('active_member', JSON.stringify(currentMember), {
-                expires: 7,
-                path: '/'
-              });
-            },
-            onError: (error) => {
-              toast.error(error.error.message || 'Failed to switch workspace');
-            }
-          }
-        );
-      }
+      return;
     }
+
+    // Persist as the user's home workspace so the middleware
+    // (src/proxy.ts) allows deep routes in it, not just overview/settings.
+    await authClient.updateUser({ defaultWorkspace: workspace.slug });
+
+    const { data: activeWorkspaceData, error } = await getActiveWorkspace({
+      slug: workspace.slug
+    });
+
+    if (error || !activeWorkspaceData) {
+      toast.error('Failed to load workspace details.');
+      setSwitchingWorkspace(false);
+      return;
+    }
+
+    const { data: currentMember } =
+      await authClient.organization.getActiveMember();
+
+    addActiveMember(currentMember || null);
+    refreshPlans(activeWorkspaceData.id);
+
+    // Invalidate all React Query caches — every feature refetches for the new workspace
+    queryClient.invalidateQueries();
+
+    // Clear switching state after queries have had time to refetch
+    setTimeout(() => {
+      setSwitchingWorkspace(false);
+    }, 2000);
+
+    Cookies.set('active_member', JSON.stringify(currentMember), {
+      expires: 7,
+      path: '/'
+    });
   }
 
   return (
