@@ -105,7 +105,7 @@ export function useUpdateContext(projectId: string, contextId: string) {
       queryClient.invalidateQueries({
         queryKey: ['context', projectId, contextId]
       });
-      toast.success('Context updated');
+      toast.success('Saved as a new version — set it as main to make it live');
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.error ?? 'Failed to update context');

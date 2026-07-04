@@ -1,6 +1,9 @@
 /**
  * GET    /api/projects/[projectId]/contexts/[contextId] — fetch a Context (any access required)
- * PATCH  /api/projects/[projectId]/contexts/[contextId] — update fields, or publish/unpublish via { status } (org owner/moderator only)
+ * PATCH  /api/projects/[projectId]/contexts/[contextId] — update fields, or publish/unpublish via { status } (org owner/moderator only).
+ *        A title/description/content edit always creates a new ContextVersion snapshot, but never
+ *        auto-promotes it to Main — the live row's content/mainVersionId are unchanged until the
+ *        user explicitly calls the set-main endpoint.
  * DELETE /api/projects/[projectId]/contexts/[contextId] — permanent delete (org owner/moderator only)
  */
 
@@ -112,8 +115,12 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
 
   const nextVersion = existing.version + 1;
 
+  // Every edit is captured as a new ContextVersion snapshot, but it does not
+  // become the live/Main version automatically — the live Context row (title,
+  // description, content, mainVersionId) is left untouched. The user must
+  // explicitly promote a version via the set-main endpoint.
   const context = await prisma.$transaction(async (tx) => {
-    const newVersionRow = await tx.contextVersion.create({
+    await tx.contextVersion.create({
       data: {
         contextId,
         version: nextVersion,
@@ -130,10 +137,8 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
     return tx.context.update({
       where: { id: contextId },
       data: {
-        ...data,
         updatedById: userId,
-        version: nextVersion,
-        mainVersionId: newVersionRow.id
+        version: nextVersion
       },
       include: {
         createdBy: { select: AUTHOR_SELECT },

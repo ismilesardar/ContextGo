@@ -34,7 +34,8 @@ const listHandler: ApiHandler = async (_req, { apiContext, searchParams }) => {
         : {}),
       ...(isAdmin ? {} : { members: { some: { userId } } })
     },
-    orderBy: { updatedAt: 'desc' }
+    orderBy: { updatedAt: 'desc' },
+    include: { _count: { select: { members: true } } }
   });
 
   return NextResponse.json({ projects });

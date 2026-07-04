@@ -48,11 +48,17 @@ export function ProjectCard({
       </CardHeader>
 
       <CardContent className='flex items-center justify-between'>
-        {project.status === 'archived' ? (
-          <Badge variant='secondary'>Archived</Badge>
-        ) : (
-          <Badge variant='outline'>Active</Badge>
-        )}
+        <div className='flex items-center gap-2'>
+          {project.status === 'archived' ? (
+            <Badge variant='secondary'>Archived</Badge>
+          ) : (
+            <Badge variant='outline'>Active</Badge>
+          )}
+          <span className='text-muted-foreground flex items-center gap-1 text-xs'>
+            <Icons.users className='size-3.5' />
+            {project._count.members}
+          </span>
+        </div>
         <span className='text-muted-foreground text-xs'>
           Updated {new Date(project.updatedAt).toLocaleDateString()}
         </span>

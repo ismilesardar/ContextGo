@@ -18,6 +18,9 @@ export interface Project {
   createdById: string;
   createdAt: string;
   updatedAt: string;
+  _count: {
+    members: number;
+  };
 }
 
 interface UseProjectsFilters {
