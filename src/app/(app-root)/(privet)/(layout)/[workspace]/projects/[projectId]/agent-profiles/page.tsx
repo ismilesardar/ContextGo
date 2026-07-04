@@ -1,13 +1,19 @@
-import { PlaceholderTab } from '@/features/projects/components/placeholder-tab';
+import type { Metadata } from 'next';
+import { APP_NAME } from '@/config/url.config';
+import { AgentProfilesListView } from '@/features/agent-profiles/components/agent-profiles-list-view';
 
-export default function AgentProfilesPage() {
+export const metadata: Metadata = {
+  title: `Agent Profiles - ${APP_NAME}`
+};
+
+export default async function AgentProfilesPage({
+  params
+}: {
+  params: Promise<{ workspace: string; projectId: string }>;
+}) {
+  const { workspace, projectId } = await params;
+
   return (
-    <div className='p-6'>
-      <PlaceholderTab
-        icon='robot'
-        title='No Agent Profiles yet'
-        description='Agent Profiles combine multiple resources into reusable AI role packages, like Backend Developer or QA.'
-      />
-    </div>
+    <AgentProfilesListView workspaceSlug={workspace} projectId={projectId} />
   );
 }

@@ -46,6 +46,25 @@ model User {
   contextsUpdated Context[] @relation("ContextUpdatedBy")
   contextVersionsCreated ContextVersion[] @relation("ContextVersionCreatedBy")
 
+  instructionsCreated Instruction[] @relation("InstructionCreatedBy")
+  instructionsUpdated Instruction[] @relation("InstructionUpdatedBy")
+  instructionVersionsCreated InstructionVersion[] @relation("InstructionVersionCreatedBy")
+
+  skillsCreated Skill[] @relation("SkillCreatedBy")
+  skillsUpdated Skill[] @relation("SkillUpdatedBy")
+  skillVersionsCreated SkillVersion[] @relation("SkillVersionCreatedBy")
+
+  promptTemplatesCreated PromptTemplate[] @relation("PromptTemplateCreatedBy")
+  promptTemplatesUpdated PromptTemplate[] @relation("PromptTemplateUpdatedBy")
+  promptTemplateVersionsCreated PromptTemplateVersion[] @relation("PromptTemplateVersionCreatedBy")
+
+  checklistsCreated Checklist[] @relation("ChecklistCreatedBy")
+  checklistsUpdated Checklist[] @relation("ChecklistUpdatedBy")
+  checklistVersionsCreated ChecklistVersion[] @relation("ChecklistVersionCreatedBy")
+
+  agentProfilesCreated AgentProfile[] @relation("AgentProfileCreatedBy")
+  agentProfilesUpdated AgentProfile[] @relation("AgentProfileUpdatedBy")
+
   @@unique([email])
   @@map("user")
 }
@@ -295,6 +314,11 @@ model Project {
   updatedAt      DateTime  @updatedAt
   members        ProjectMember[]
   contexts       Context[]
+  instructions   Instruction[]
+  skills         Skill[]
+  promptTemplates PromptTemplate[]
+  checklists     Checklist[]
+  agentProfiles  AgentProfile[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -344,6 +368,217 @@ model ContextVersion {
   @@unique([contextId, version])
   @@index([contextId])
   @@map("context_version")
+}
+
+model Instruction {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  slug        String
+  description String?
+  content     String   @db.Text
+  status      String   @default("draft") // "draft" | "published"
+  version     Int      @default(1)
+  createdById String
+  createdBy   User     @relation("InstructionCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   User     @relation("InstructionUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  versions    InstructionVersion[]
+  mainVersionId String?             @unique
+  mainVersion   InstructionVersion? @relation("InstructionMainVersion", fields: [mainVersionId], references: [id])
+
+  @@unique([projectId, slug])
+  @@index([projectId])
+  @@index([projectId, status])
+  @@map("instruction")
+}
+
+model InstructionVersion {
+  id            String   @id @default(cuid())
+  instructionId String
+  instruction   Instruction @relation(fields: [instructionId], references: [id], onDelete: Cascade)
+  version       Int
+  title         String
+  description   String?
+  content       String   @db.Text
+  createdById   String
+  createdBy     User     @relation("InstructionVersionCreatedBy", fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  mainForInstruction Instruction? @relation("InstructionMainVersion")
+
+  @@unique([instructionId, version])
+  @@index([instructionId])
+  @@map("instruction_version")
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  slug        String
+  description String?
+  content     String   @db.Text
+  status      String   @default("draft") // "draft" | "published"
+  version     Int      @default(1)
+  createdById String
+  createdBy   User     @relation("SkillCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   User     @relation("SkillUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  versions    SkillVersion[]
+  mainVersionId String?        @unique
+  mainVersion   SkillVersion?  @relation("SkillMainVersion", fields: [mainVersionId], references: [id])
+
+  @@unique([projectId, slug])
+  @@index([projectId])
+  @@index([projectId, status])
+  @@map("skill")
+}
+
+model SkillVersion {
+  id          String   @id @default(cuid())
+  skillId     String
+  skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  version     Int
+  title       String
+  description String?
+  content     String   @db.Text
+  createdById String
+  createdBy   User     @relation("SkillVersionCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  mainForSkill Skill?  @relation("SkillMainVersion")
+
+  @@unique([skillId, version])
+  @@index([skillId])
+  @@map("skill_version")
+}
+
+model PromptTemplate {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  slug        String
+  description String?
+  content     String   @db.Text
+  status      String   @default("draft") // "draft" | "published"
+  version     Int      @default(1)
+  createdById String
+  createdBy   User     @relation("PromptTemplateCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   User     @relation("PromptTemplateUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  versions    PromptTemplateVersion[]
+  mainVersionId String?                 @unique
+  mainVersion   PromptTemplateVersion?  @relation("PromptTemplateMainVersion", fields: [mainVersionId], references: [id])
+
+  @@unique([projectId, slug])
+  @@index([projectId])
+  @@index([projectId, status])
+  @@map("prompt_template")
+}
+
+model PromptTemplateVersion {
+  id               String   @id @default(cuid())
+  promptTemplateId String
+  promptTemplate   PromptTemplate @relation(fields: [promptTemplateId], references: [id], onDelete: Cascade)
+  version          Int
+  title            String
+  description      String?
+  content          String   @db.Text
+  createdById      String
+  createdBy        User     @relation("PromptTemplateVersionCreatedBy", fields: [createdById], references: [id])
+  createdAt        DateTime @default(now())
+  mainForPromptTemplate PromptTemplate? @relation("PromptTemplateMainVersion")
+
+  @@unique([promptTemplateId, version])
+  @@index([promptTemplateId])
+  @@map("prompt_template_version")
+}
+
+model Checklist {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  slug        String
+  description String?
+  content     String   @db.Text
+  status      String   @default("draft") // "draft" | "published"
+  version     Int      @default(1)
+  createdById String
+  createdBy   User     @relation("ChecklistCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   User     @relation("ChecklistUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  versions    ChecklistVersion[]
+  mainVersionId String?            @unique
+  mainVersion   ChecklistVersion?  @relation("ChecklistMainVersion", fields: [mainVersionId], references: [id])
+
+  @@unique([projectId, slug])
+  @@index([projectId])
+  @@index([projectId, status])
+  @@map("checklist")
+}
+
+model ChecklistVersion {
+  id          String   @id @default(cuid())
+  checklistId String
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  version     Int
+  title       String
+  description String?
+  content     String   @db.Text
+  createdById String
+  createdBy   User     @relation("ChecklistVersionCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  mainForChecklist Checklist? @relation("ChecklistMainVersion")
+
+  @@unique([checklistId, version])
+  @@index([checklistId])
+  @@map("checklist_version")
+}
+
+model AgentProfile {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  slug        String
+  description String?
+  status      String   @default("draft") // "draft" | "published"
+  createdById String
+  createdBy   User     @relation("AgentProfileCreatedBy", fields: [createdById], references: [id])
+  updatedById String
+  updatedBy   User     @relation("AgentProfileUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  resources   AgentProfileResource[]
+
+  @@unique([projectId, slug])
+  @@index([projectId])
+  @@map("agent_profile")
+}
+
+model AgentProfileResource {
+  id             String   @id @default(cuid())
+  agentProfileId String
+  agentProfile   AgentProfile @relation(fields: [agentProfileId], references: [id], onDelete: Cascade)
+  resourceType   String   // "context" | "instruction" | "skill" | "prompt_template" | "checklist"
+  resourceId     String
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  @@unique([agentProfileId, resourceType, resourceId])
+  @@index([agentProfileId])
+  @@map("agent_profile_resource")
 }
 
 model ProjectMember {

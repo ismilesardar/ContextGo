@@ -1,13 +1,19 @@
-import { PlaceholderTab } from '@/features/projects/components/placeholder-tab';
+import type { Metadata } from 'next';
+import { APP_NAME } from '@/config/url.config';
+import { InstructionsListView } from '@/features/instructions/components/instructions-list-view';
 
-export default function InstructionsPage() {
+export const metadata: Metadata = {
+  title: `Instructions - ${APP_NAME}`
+};
+
+export default async function InstructionsPage({
+  params
+}: {
+  params: Promise<{ workspace: string; projectId: string }>;
+}) {
+  const { workspace, projectId } = await params;
+
   return (
-    <div className='p-6'>
-      <PlaceholderTab
-        icon='page'
-        title='No Instructions yet'
-        description='Instructions define AI behavior rules, coding conventions, and team workflows for this project.'
-      />
-    </div>
+    <InstructionsListView workspaceSlug={workspace} projectId={projectId} />
   );
 }

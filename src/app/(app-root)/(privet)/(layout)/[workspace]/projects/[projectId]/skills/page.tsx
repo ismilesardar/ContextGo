@@ -1,13 +1,17 @@
-import { PlaceholderTab } from '@/features/projects/components/placeholder-tab';
+import type { Metadata } from 'next';
+import { APP_NAME } from '@/config/url.config';
+import { SkillsListView } from '@/features/skills/components/skills-list-view';
 
-export default function SkillsPage() {
-  return (
-    <div className='p-6'>
-      <PlaceholderTab
-        icon='star'
-        title='No Skills yet'
-        description='Skills are reusable workflows and standard operating procedures your team relies on.'
-      />
-    </div>
-  );
+export const metadata: Metadata = {
+  title: `Skills - ${APP_NAME}`
+};
+
+export default async function SkillsPage({
+  params
+}: {
+  params: Promise<{ workspace: string; projectId: string }>;
+}) {
+  const { workspace, projectId } = await params;
+
+  return <SkillsListView workspaceSlug={workspace} projectId={projectId} />;
 }

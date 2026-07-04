@@ -1,13 +1,19 @@
-import { PlaceholderTab } from '@/features/projects/components/placeholder-tab';
+import type { Metadata } from 'next';
+import { APP_NAME } from '@/config/url.config';
+import { PromptTemplatesListView } from '@/features/prompt-templates/components/prompt-templates-list-view';
 
-export default function PromptTemplatesPage() {
+export const metadata: Metadata = {
+  title: `Prompt Templates - ${APP_NAME}`
+};
+
+export default async function PromptTemplatesPage({
+  params
+}: {
+  params: Promise<{ workspace: string; projectId: string }>;
+}) {
+  const { workspace, projectId } = await params;
+
   return (
-    <div className='p-6'>
-      <PlaceholderTab
-        icon='messageCircle'
-        title='No Prompt Templates yet'
-        description='Prompt Templates are your team library of reusable prompts for common AI tasks.'
-      />
-    </div>
+    <PromptTemplatesListView workspaceSlug={workspace} projectId={projectId} />
   );
 }

@@ -1,13 +1,17 @@
-import { PlaceholderTab } from '@/features/projects/components/placeholder-tab';
+import type { Metadata } from 'next';
+import { APP_NAME } from '@/config/url.config';
+import { ChecklistsListView } from '@/features/checklists/components/checklists-list-view';
 
-export default function ChecklistsPage() {
-  return (
-    <div className='p-6'>
-      <PlaceholderTab
-        icon='clipboardX'
-        title='No Checklists yet'
-        description='Checklists cover QA, release, security, and deployment verification for this project.'
-      />
-    </div>
-  );
+export const metadata: Metadata = {
+  title: `Checklists - ${APP_NAME}`
+};
+
+export default async function ChecklistsPage({
+  params
+}: {
+  params: Promise<{ workspace: string; projectId: string }>;
+}) {
+  const { workspace, projectId } = await params;
+
+  return <ChecklistsListView workspaceSlug={workspace} projectId={projectId} />;
 }
