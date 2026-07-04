@@ -22,47 +22,49 @@ export function ProjectWorkspaceShell({
   const canManage = data?.access?.isOrgAdmin === true;
 
   return (
-    <div className='flex h-full min-h-0 flex-col'>
-      <div className='border-border flex items-center justify-between gap-4 border-b px-6 py-4'>
-        <div className='flex min-w-0 items-center gap-3'>
-          <Link
-            href={`/${workspaceSlug}/projects`}
-            className='text-muted-foreground hover:text-foreground flex size-8 shrink-0 items-center justify-center rounded-md transition-colors'
-          >
-            <Icons.chevronLeft className='size-4' />
-          </Link>
+    <div className='flex flex-col'>
+      <div className='bg-background sticky top-0 z-20'>
+        <div className='border-border flex items-center justify-between gap-4 border-b px-6 py-4'>
+          <div className='flex min-w-0 items-center gap-3'>
+            <Link
+              href={`/${workspaceSlug}/projects`}
+              className='text-muted-foreground hover:text-foreground flex size-8 shrink-0 items-center justify-center rounded-md transition-colors'
+            >
+              <Icons.chevronLeft className='size-4' />
+            </Link>
 
-          {isLoading ? (
-            <Skeleton className='h-6 w-40' />
-          ) : (
-            <div className='flex min-w-0 items-center gap-2'>
-              <h1 className='truncate text-lg font-semibold'>
-                {project?.name}
-              </h1>
-              {project?.status === 'archived' && (
-                <Badge variant='secondary'>Archived</Badge>
-              )}
-            </div>
+            {isLoading ? (
+              <Skeleton className='h-6 w-40' />
+            ) : (
+              <div className='flex min-w-0 items-center gap-2'>
+                <h1 className='truncate text-lg font-semibold'>
+                  {project?.name}
+                </h1>
+                {project?.status === 'archived' && (
+                  <Badge variant='secondary'>Archived</Badge>
+                )}
+              </div>
+            )}
+          </div>
+
+          {canManage && (
+            <Link
+              href={`/${workspaceSlug}/projects/${projectId}/settings`}
+              className='text-muted-foreground hover:text-foreground flex size-8 shrink-0 items-center justify-center rounded-md transition-colors'
+              title='Project settings'
+            >
+              <Icons.settings className='size-4' />
+            </Link>
           )}
         </div>
 
-        {canManage && (
-          <Link
-            href={`/${workspaceSlug}/projects/${projectId}/settings`}
-            className='text-muted-foreground hover:text-foreground flex size-8 shrink-0 items-center justify-center rounded-md transition-colors'
-            title='Project settings'
-          >
-            <Icons.settings className='size-4' />
-          </Link>
-        )}
+        <ProjectWorkspaceNav
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+        />
       </div>
 
-      <ProjectWorkspaceNav
-        workspaceSlug={workspaceSlug}
-        projectId={projectId}
-      />
-
-      <div className='min-h-0 flex-1 overflow-y-auto'>{children}</div>
+      {children}
     </div>
   );
 }

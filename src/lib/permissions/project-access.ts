@@ -48,7 +48,11 @@ export async function getProjectAccess(
 
 /**
  * Only org owner/moderator can manage a project (edit/archive/delete/manage
- * members) — project-level ProjectMember roles are always read-level.
+ * members) or any resource inside it (Contexts, and future
+ * Instructions/Skills/Prompt Templates/Checklists) — project-level
+ * ProjectMember roles are always read-level. Per explicit requirement: asset
+ * creation inside a project must be gated the same way as project
+ * management, not opened up to any project member.
  */
 export function canManageProject(access: ProjectAccess | null): boolean {
   return access?.isOrgAdmin === true;

@@ -1,13 +1,17 @@
-import { PlaceholderTab } from '@/features/projects/components/placeholder-tab';
+import type { Metadata } from 'next';
+import { APP_NAME } from '@/config/url.config';
+import { ContextsListView } from '@/features/contexts/components/contexts-list-view';
 
-export default function ContextsPage() {
-  return (
-    <div className='p-6'>
-      <PlaceholderTab
-        icon='fileText'
-        title='No Contexts yet'
-        description="Contexts capture your project's architecture, business rules, and technical decisions so every AI tool follows the same knowledge."
-      />
-    </div>
-  );
+export const metadata: Metadata = {
+  title: `Contexts - ${APP_NAME}`
+};
+
+export default async function ContextsPage({
+  params
+}: {
+  params: Promise<{ workspace: string; projectId: string }>;
+}) {
+  const { workspace, projectId } = await params;
+
+  return <ContextsListView workspaceSlug={workspace} projectId={projectId} />;
 }

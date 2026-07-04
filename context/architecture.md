@@ -17,6 +17,7 @@
 | Rate limiting | Arcjet | `@arcjet/next` |
 | Error tracking | Sentry | `src/instrumentation.ts` |
 | Icons | Lucide React + Tabler Icons | |
+| Rich text editor | Tiptap 3 (`@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`, `@tiptap/markdown`) | `src/components/editor/` — content persisted as Markdown, rendered read-only via `src/components/share/markdown.tsx` (`react-markdown` + `remark-gfm`) |
 | Package manager | pnpm 10 | Node 22 |
 
 ## Folder Ownership
@@ -49,6 +50,7 @@
 | React Query / Axios setup | `src/lib/api-setting/` |
 | Zod schemas | `src/lib/zod-schema/` |
 | URL config | `src/config/url.config.ts` |
+| Rich text editor / viewer (shared, reused by every resource type) | `src/components/editor/rich-text-editor.tsx`, `rich-text-viewer.tsx` |
 
 ## Auth & Access Model
 
