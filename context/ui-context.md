@@ -223,7 +223,7 @@ Global Sidebar:
 
 - Overview
 - Projects
-- Marketplace
+- Library
 - Organization Settings
 
 Project Navigation (horizontal top nav inside the content area, not the sidebar):

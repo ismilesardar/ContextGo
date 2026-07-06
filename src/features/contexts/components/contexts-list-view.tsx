@@ -16,6 +16,7 @@ import {
 import { Icons } from '@/components/icons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useProject } from '@/features/projects/utils/use-projects';
+import { useTemplatePickerModal } from '@/features/library/components/template-picker-modal';
 import { useContexts, type Context } from '../utils/use-contexts';
 import { ContextCard } from './context-card';
 import { ContextCardSkeleton } from './context-card-skeleton';
@@ -64,6 +65,13 @@ export function ContextsListView({
 
   const hasActiveFilter = !!debouncedSearch || status !== 'all';
 
+  const { setShowTemplatePickerModal, TemplatePickerModal } =
+    useTemplatePickerModal({
+      workspaceSlug,
+      projectId,
+      resourceType: 'context'
+    });
+
   return (
     <PageShell
       title='Contexts'
@@ -71,12 +79,22 @@ export function ContextsListView({
       showDate={false}
       actions={
         canManage && (
-          <Button asChild>
-            <Link href={`/${workspaceSlug}/projects/${projectId}/contexts/new`}>
-              <Icons.add className='mr-2 size-4' />
-              Create context
-            </Link>
-          </Button>
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => setShowTemplatePickerModal(true)}
+            >
+              Use template
+            </Button>
+            <Button asChild>
+              <Link
+                href={`/${workspaceSlug}/projects/${projectId}/contexts/new`}
+              >
+                <Icons.add className='mr-2 size-4' />
+                Create context
+              </Link>
+            </Button>
+          </div>
         )
       }
     >
@@ -174,6 +192,8 @@ export function ContextsListView({
           ))}
         </div>
       )}
+
+      <TemplatePickerModal />
     </PageShell>
   );
 }

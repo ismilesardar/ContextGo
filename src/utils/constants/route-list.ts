@@ -28,6 +28,15 @@ export const pinnedNavItems: NavItem[] = [
     items: []
   },
   {
+    title: 'Library',
+    url: '/library',
+    icon: 'product',
+    isActive: false,
+    isAdmin: false,
+    shortcut: ['l', 'i'],
+    items: []
+  },
+  {
     title: 'Archived',
     url: '/projects/archived',
     icon: 'restore',

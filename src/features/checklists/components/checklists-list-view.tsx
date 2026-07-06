@@ -16,6 +16,7 @@ import {
 import { Icons } from '@/components/icons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useProject } from '@/features/projects/utils/use-projects';
+import { useTemplatePickerModal } from '@/features/library/components/template-picker-modal';
 import { useChecklists, type Checklist } from '../utils/use-checklists';
 import { ChecklistCard } from './checklist-card';
 import { ChecklistCardSkeleton } from './checklist-card-skeleton';
@@ -64,6 +65,13 @@ export function ChecklistsListView({
 
   const hasActiveFilter = !!debouncedSearch || status !== 'all';
 
+  const { setShowTemplatePickerModal, TemplatePickerModal } =
+    useTemplatePickerModal({
+      workspaceSlug,
+      projectId,
+      resourceType: 'checklist'
+    });
+
   return (
     <PageShell
       title='Checklists'
@@ -71,14 +79,22 @@ export function ChecklistsListView({
       showDate={false}
       actions={
         canManage && (
-          <Button asChild>
-            <Link
-              href={`/${workspaceSlug}/projects/${projectId}/checklists/new`}
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => setShowTemplatePickerModal(true)}
             >
-              <Icons.add className='mr-2 size-4' />
-              Create checklist
-            </Link>
-          </Button>
+              Use template
+            </Button>
+            <Button asChild>
+              <Link
+                href={`/${workspaceSlug}/projects/${projectId}/checklists/new`}
+              >
+                <Icons.add className='mr-2 size-4' />
+                Create checklist
+              </Link>
+            </Button>
+          </div>
         )
       }
     >
@@ -176,6 +192,8 @@ export function ChecklistsListView({
           ))}
         </div>
       )}
+
+      <TemplatePickerModal />
     </PageShell>
   );
 }

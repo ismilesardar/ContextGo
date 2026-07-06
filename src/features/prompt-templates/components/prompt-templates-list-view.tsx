@@ -16,6 +16,7 @@ import {
 import { Icons } from '@/components/icons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useProject } from '@/features/projects/utils/use-projects';
+import { useTemplatePickerModal } from '@/features/library/components/template-picker-modal';
 import {
   usePromptTemplates,
   type PromptTemplate
@@ -67,6 +68,13 @@ export function PromptTemplatesListView({
 
   const hasActiveFilter = !!debouncedSearch || status !== 'all';
 
+  const { setShowTemplatePickerModal, TemplatePickerModal } =
+    useTemplatePickerModal({
+      workspaceSlug,
+      projectId,
+      resourceType: 'promptTemplate'
+    });
+
   return (
     <PageShell
       title='Prompt Templates'
@@ -74,14 +82,22 @@ export function PromptTemplatesListView({
       showDate={false}
       actions={
         canManage && (
-          <Button asChild>
-            <Link
-              href={`/${workspaceSlug}/projects/${projectId}/prompt-templates/new`}
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => setShowTemplatePickerModal(true)}
             >
-              <Icons.add className='mr-2 size-4' />
-              Create promptTemplate
-            </Link>
-          </Button>
+              Use template
+            </Button>
+            <Button asChild>
+              <Link
+                href={`/${workspaceSlug}/projects/${projectId}/prompt-templates/new`}
+              >
+                <Icons.add className='mr-2 size-4' />
+                Create promptTemplate
+              </Link>
+            </Button>
+          </div>
         )
       }
     >
@@ -179,6 +195,8 @@ export function PromptTemplatesListView({
           ))}
         </div>
       )}
+
+      <TemplatePickerModal />
     </PageShell>
   );
 }

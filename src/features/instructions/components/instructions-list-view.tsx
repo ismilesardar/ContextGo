@@ -16,6 +16,7 @@ import {
 import { Icons } from '@/components/icons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useProject } from '@/features/projects/utils/use-projects';
+import { useTemplatePickerModal } from '@/features/library/components/template-picker-modal';
 import { useInstructions, type Instruction } from '../utils/use-instructions';
 import { InstructionCard } from './instruction-card';
 import { InstructionCardSkeleton } from './instruction-card-skeleton';
@@ -64,6 +65,13 @@ export function InstructionsListView({
 
   const hasActiveFilter = !!debouncedSearch || status !== 'all';
 
+  const { setShowTemplatePickerModal, TemplatePickerModal } =
+    useTemplatePickerModal({
+      workspaceSlug,
+      projectId,
+      resourceType: 'instruction'
+    });
+
   return (
     <PageShell
       title='Instructions'
@@ -71,14 +79,22 @@ export function InstructionsListView({
       showDate={false}
       actions={
         canManage && (
-          <Button asChild>
-            <Link
-              href={`/${workspaceSlug}/projects/${projectId}/instructions/new`}
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => setShowTemplatePickerModal(true)}
             >
-              <Icons.add className='mr-2 size-4' />
-              Create instruction
-            </Link>
-          </Button>
+              Use template
+            </Button>
+            <Button asChild>
+              <Link
+                href={`/${workspaceSlug}/projects/${projectId}/instructions/new`}
+              >
+                <Icons.add className='mr-2 size-4' />
+                Create instruction
+              </Link>
+            </Button>
+          </div>
         )
       }
     >
@@ -176,6 +192,8 @@ export function InstructionsListView({
           ))}
         </div>
       )}
+
+      <TemplatePickerModal />
     </PageShell>
   );
 }

@@ -176,7 +176,7 @@ Do not create example/demo files (like ModalExample.tsx) in the main codebase un
 - Use the following tools to fetch and search documentation if they are available:
   - `resolve_library_id` to resolve the package/library name in the docs.
   - `get_library_docs` for up-to-date documentation.
-
+Well, the marketplace section we named could be given another better name.
 - Use Tailwind CSS 4 patterns only; prefer utility classes and the existing `@tailwindcss/postcss` setup.
 - Prefer CSS custom properties for theme colors and design tokens; avoid hardcoded color values when a token exists.
 - Use `cn()` from `@/lib/utils` for conditional class merging.

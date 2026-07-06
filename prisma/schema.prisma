@@ -509,6 +509,27 @@ model PromptTemplateVersion {
   @@map("prompt_template_version")
 }
 
+model LibraryTemplate {
+  id                    String   @id @default(cuid())
+  source                String   @default("awesome-copilot")
+  sourcePath            String
+  sourceCategory        String // "instruction" | "agent" | "skill" | "workflow" | "cookbook" | "plugin" | "hook"
+  sourceUrl             String
+  title                 String
+  description           String?
+  tags                  String[] @default([])
+  content               String   @db.Text
+  frontmatter           Json?
+  contentHash           String
+  suggestedResourceType String // "context" | "instruction" | "skill" | "promptTemplate" | "checklist"
+  lastSyncedAt          DateTime @updatedAt
+  createdAt             DateTime @default(now())
+
+  @@unique([source, sourcePath])
+  @@index([source, sourceCategory])
+  @@map("library_template")
+}
+
 model Checklist {
   id          String   @id @default(cuid())
   projectId   String

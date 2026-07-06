@@ -19,7 +19,8 @@ const VERB_PHRASES: Record<string, string> = {
   revoked: 'revoked',
   granted: 'granted access to',
   grant_updated: 'updated resource access for',
-  removed_from_project: 'removed'
+  removed_from_project: 'removed',
+  imported_from_library: 'imported from the library'
 };
 
 const RESOURCE_TYPE_LABELS: Record<string, string> = {

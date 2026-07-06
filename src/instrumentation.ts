@@ -36,6 +36,11 @@ export async function register() {
       './lib/cron/user-monthly-plan-reset-cron-handler'
     );
     userMonthlyPlanResetCron();
+
+    const { librarySyncCron } = await import(
+      './lib/cron/library-sync-cron-handler'
+    );
+    librarySyncCron();
   }
 }
 

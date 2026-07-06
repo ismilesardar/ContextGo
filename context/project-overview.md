@@ -147,12 +147,12 @@ ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge
 - Filter by resource type
 - Fast navigation
 
-### Marketplace (Future Phase)
-- Install reusable Resources
-- Community-created Agent Profiles
-- Shared Instructions
-- Shared Skills
-- Prompt Template library
+### Library
+- Browse and import community-contributed Instructions, Skills, Prompt Templates, and more, synced from github/awesome-copilot
+- Search and filter by category
+- Preview before importing
+- Import directly into a project as any of the 5 content-bearing Resource types
+- Global section, open to any authenticated user to browse; importing requires org owner/moderator
 
 ## Scope
 
@@ -167,6 +167,7 @@ ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge
 - Prompt Templates
 - Checklists
 - Agent Profiles
+- Library (community template import)
 - Version control
 - Role-based permissions
 - Project activity
@@ -182,7 +183,6 @@ ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge
 - AI inference
 - Chat interface
 - Document storage and AI extraction (planned for a future release)
-- Marketplace implementation (future phase)
 - Billing and subscriptions
 - Mobile application
 - Real-time collaborative editing

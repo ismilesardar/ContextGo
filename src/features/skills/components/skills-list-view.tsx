@@ -16,6 +16,7 @@ import {
 import { Icons } from '@/components/icons';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useProject } from '@/features/projects/utils/use-projects';
+import { useTemplatePickerModal } from '@/features/library/components/template-picker-modal';
 import { useSkills, type Skill } from '../utils/use-skills';
 import { SkillCard } from './skill-card';
 import { SkillCardSkeleton } from './skill-card-skeleton';
@@ -64,6 +65,9 @@ export function SkillsListView({
 
   const hasActiveFilter = !!debouncedSearch || status !== 'all';
 
+  const { setShowTemplatePickerModal, TemplatePickerModal } =
+    useTemplatePickerModal({ workspaceSlug, projectId, resourceType: 'skill' });
+
   return (
     <PageShell
       title='Skills'
@@ -71,12 +75,20 @@ export function SkillsListView({
       showDate={false}
       actions={
         canManage && (
-          <Button asChild>
-            <Link href={`/${workspaceSlug}/projects/${projectId}/skills/new`}>
-              <Icons.add className='mr-2 size-4' />
-              Create skill
-            </Link>
-          </Button>
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => setShowTemplatePickerModal(true)}
+            >
+              Use template
+            </Button>
+            <Button asChild>
+              <Link href={`/${workspaceSlug}/projects/${projectId}/skills/new`}>
+                <Icons.add className='mr-2 size-4' />
+                Create skill
+              </Link>
+            </Button>
+          </div>
         )
       }
     >
@@ -172,6 +184,8 @@ export function SkillsListView({
           ))}
         </div>
       )}
+
+      <TemplatePickerModal />
     </PageShell>
   );
 }
