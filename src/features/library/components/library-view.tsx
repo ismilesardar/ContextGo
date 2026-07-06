@@ -23,7 +23,8 @@ import {
   PaginationPrevious
 } from '@/components/ui/pagination';
 import { useDebounce } from '@/hooks/use-debounce';
-import { usePermissions } from '@/hooks/workspace/use-workspace-has-permission';
+import { useUserSession } from '@/hooks/use-client-session';
+import { ACCESS_TYPE } from '@/utils/constants/organization-const';
 import {
   CATEGORY_LABELS,
   type LibrarySourceCategory
@@ -54,8 +55,8 @@ export function LibraryView({ workspaceSlug }: { workspaceSlug: string }) {
   const [previewTemplate, setPreviewTemplate] =
     useState<LibraryTemplateSummary | null>(null);
 
-  const { role } = usePermissions();
-  const isOrgAdmin = role === 'owner' || role === 'moderator';
+  const { user } = useUserSession();
+  const isSystemAdmin = user?.accessType === ACCESS_TYPE.SYSTEM;
 
   const { data, isLoading, isError, refetch } = useLibraryTemplates({
     search: debouncedSearch || undefined,
@@ -82,7 +83,7 @@ export function LibraryView({ workspaceSlug }: { workspaceSlug: string }) {
       description='Import ready-made instructions, skills, and prompts from the community into any of your projects.'
       showDate={false}
       actions={
-        isOrgAdmin && (
+        isSystemAdmin && (
           <Button
             variant='outline'
             onClick={() => syncLibrary.mutate()}

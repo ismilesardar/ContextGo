@@ -76,6 +76,12 @@ Copy `.env.example` to `.env` for local development. Never commit `.env`. Import
 |----------|-------|
 | `ARCJET_KEY` | From Arcjet dashboard |
 
+## Library sync (github/awesome-copilot)
+
+| Variable | Notes |
+|----------|-------|
+| `GITHUB_SYNC_TOKEN` | Optional. A GitHub personal access token (no scopes needed, repo is public) sent as `Authorization: Bearer` when listing the awesome-copilot tree. Without it, syncs share GitHub's unauthenticated rate limit (60 requests/hr per IP, shared across all local dev machines on the same network) — with it, the limit is 5,000/hr. |
+
 ## Notes
 
 - `NEXT_PUBLIC_*` variables are inlined at build time — changing them after build has no effect on deployed output

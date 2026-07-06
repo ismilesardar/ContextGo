@@ -137,11 +137,29 @@ async function mapWithConcurrency<T>(
 }
 
 export async function syncLibraryTemplates(): Promise<LibrarySyncSummary> {
+  const githubToken = process.env.GITHUB_SYNC_TOKEN;
   const treeRes = await fetch(
     `https://api.github.com/repos/${REPO}/git/trees/${BRANCH}?recursive=1`,
-    { headers: { Accept: 'application/vnd.github+json' } }
+    {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {})
+      }
+    }
   );
   if (!treeRes.ok) {
+    if (
+      treeRes.status === 403 &&
+      treeRes.headers.get('x-ratelimit-remaining') === '0'
+    ) {
+      const resetAt = treeRes.headers.get('x-ratelimit-reset');
+      const resetMessage = resetAt
+        ? ` Resets at ${new Date(Number(resetAt) * 1000).toLocaleTimeString()}.`
+        : '';
+      throw new Error(
+        `GitHub API rate limit exceeded while fetching awesome-copilot.${resetMessage} Set GITHUB_SYNC_TOKEN in your environment to raise the limit from 60/hr to 5,000/hr.`
+      );
+    }
     throw new Error(`Failed to fetch awesome-copilot tree: ${treeRes.status}`);
   }
 

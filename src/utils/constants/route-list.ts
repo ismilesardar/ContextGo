@@ -30,7 +30,7 @@ export const pinnedNavItems: NavItem[] = [
   {
     title: 'Library',
     url: '/library',
-    icon: 'product',
+    icon: 'library',
     isActive: false,
     isAdmin: false,
     shortcut: ['l', 'i'],
