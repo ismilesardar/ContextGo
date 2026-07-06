@@ -2,9 +2,9 @@ import { APP_NAME } from '@/config/url.config';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} – AI-Powered Amazon Selling Suite`,
+  title: `${APP_NAME} – The Knowledge Layer for AI-Powered Teams`,
   description:
-    'Optimize listings, analyze reviews, ensure compliance, and grow your Amazon business with AI-powered tools.'
+    'Organize, version, and publish your project knowledge so every AI tool your team uses — Claude, ChatGPT, Cursor, and more — works from the same approved standards.'
 };
 
 export default function LandingPageLayout({

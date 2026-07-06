@@ -3,31 +3,29 @@
 import { motion } from 'motion/react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { APP_NAME } from '@/config/url.config';
 
-export default function CTA() {
+export default function PricingTeaser() {
   return (
-    <section className='bg-foreground py-20 md:py-28'>
+    <section className='border-border bg-muted/30 border-y py-20 md:py-28'>
       <div className='mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8'>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className='text-background text-3xl font-bold tracking-tight md:text-4xl'
+          className='text-foreground text-3xl font-bold tracking-tight md:text-4xl'
         >
-          Give every AI tool the same source of truth
+          Simple plans as you grow
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className='text-background/70 mt-4 text-lg'
+          className='text-muted-foreground mt-4 text-lg'
         >
-          Join teams using {APP_NAME} to organize, version, and publish
-          knowledge for Claude Code, ChatGPT, Cursor, and more.
+          Start free, upgrade only when your organization needs more projects
+          and workspaces.
         </motion.p>
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -36,15 +34,12 @@ export default function CTA() {
           className='mt-8'
         >
           <Link
-            href='/auth/register'
-            className='bg-background text-foreground hover:bg-background/90 inline-flex items-center justify-center gap-2 rounded-md px-8 py-4 text-base font-semibold shadow-sm transition-all'
+            href='/pricing'
+            className='border-border bg-background text-foreground hover:bg-accent inline-flex items-center justify-center gap-2 rounded-md border px-6 py-3 text-base font-semibold shadow-sm transition-all'
           >
-            Get Started Free
+            See full pricing
             <ArrowRight className='h-4 w-4' />
           </Link>
-          <p className='text-background/60 mt-4 text-sm'>
-            No credit card required &middot; Cancel anytime
-          </p>
         </motion.div>
       </div>
     </section>

@@ -21,17 +21,17 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${
+      className={`bg-background fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'border-b border-neutral-200 bg-white py-3 shadow-sm'
-          : 'border-b border-transparent bg-white py-5'
+          ? 'border-border border-b py-3 shadow-sm'
+          : 'border-b border-transparent py-5'
       }`}
     >
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
         <div className='flex items-center justify-between'>
           {/* Logo */}
           <Link href='/' className='group flex items-center gap-2.5'>
-            <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-(--shibsa-brand-color) to-orange-500 shadow-sm transition-shadow group-hover:shadow-md'>
+            <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-(--brand-color) to-orange-500 shadow-sm transition-shadow group-hover:shadow-md'>
               <svg
                 width='20'
                 height='20'
@@ -47,14 +47,9 @@ export default function Navbar() {
                 <path d='M2 12l10 5 10-5' />
               </svg>
             </div>
-            <div className='flex flex-col leading-none'>
-              <span className='text-lg font-bold tracking-tight text-neutral-900'>
-                {APP_NAME}
-              </span>
-              <span className='text-[10px] font-medium tracking-wider text-(--shibsa-brand-color) uppercase'>
-                Amazon Suite
-              </span>
-            </div>
+            <span className='text-foreground text-lg font-bold tracking-tight'>
+              {APP_NAME}
+            </span>
           </Link>
 
           {/* Desktop Nav */}
@@ -62,27 +57,33 @@ export default function Navbar() {
             <div className='flex items-center gap-6'>
               <Link
                 href='/about'
-                className='text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900'
+                className='text-muted-foreground hover:text-foreground text-sm font-medium transition-colors'
               >
                 About Us
               </Link>
               <Link
                 href='/pricing'
-                className='text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900'
+                className='text-muted-foreground hover:text-foreground text-sm font-medium transition-colors'
               >
                 Pricing
+              </Link>
+              <Link
+                href='/help'
+                className='text-muted-foreground hover:text-foreground text-sm font-medium transition-colors'
+              >
+                Documentation
               </Link>
             </div>
             <div className='flex items-center gap-4'>
               <Link
                 href='/auth/login'
-                className='text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900'
+                className='text-muted-foreground hover:text-foreground text-sm font-medium transition-colors'
               >
                 Sign In
               </Link>
               <Link
                 href='/auth/register'
-                className='rounded-lg bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-neutral-800'
+                className='bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-5 py-2.5 text-sm font-semibold shadow-sm transition-all'
               >
                 Get Started
               </Link>
@@ -91,7 +92,7 @@ export default function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <button
-            className='p-2 text-neutral-500 transition-colors hover:text-neutral-900 md:hidden'
+            className='text-muted-foreground hover:text-foreground p-2 transition-colors md:hidden'
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
@@ -110,35 +111,42 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className='overflow-hidden border-b border-neutral-200 bg-white md:hidden'
+            className='bg-background border-border overflow-hidden border-b md:hidden'
           >
             <div className='flex flex-col gap-4 px-4 py-6'>
               <Link
                 href='/about'
-                className='py-2 text-base font-medium text-neutral-500 transition-colors hover:text-neutral-900'
+                className='text-muted-foreground hover:text-foreground py-2 text-base font-medium transition-colors'
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 About Us
               </Link>
               <Link
                 href='/pricing'
-                className='py-2 text-base font-medium text-neutral-500 transition-colors hover:text-neutral-900'
+                className='text-muted-foreground hover:text-foreground py-2 text-base font-medium transition-colors'
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Pricing
               </Link>
+              <Link
+                href='/help'
+                className='text-muted-foreground hover:text-foreground py-2 text-base font-medium transition-colors'
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Documentation
+              </Link>
 
-              <div className='my-2 h-px bg-neutral-200' />
+              <div className='bg-border my-2 h-px' />
               <Link
                 href='/auth/login'
-                className='py-2 text-base font-medium text-neutral-500 transition-colors hover:text-neutral-900'
+                className='text-muted-foreground hover:text-foreground py-2 text-base font-medium transition-colors'
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Sign In
               </Link>
               <Link
                 href='/auth/register'
-                className='mt-2 rounded-lg bg-neutral-900 py-3 text-center text-base font-semibold text-white shadow-sm transition-all hover:bg-neutral-800'
+                className='bg-primary text-primary-foreground hover:bg-primary/90 mt-2 rounded-lg py-3 text-center text-base font-semibold shadow-sm transition-all'
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Get Started

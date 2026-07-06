@@ -4,18 +4,23 @@ import { motion } from 'motion/react';
 import NumberFlow from '@number-flow/react';
 
 export default function TrustedBy() {
-  const stats = [
-    { label: 'Active Sellers', value: 10000, suffix: '+' },
-    { label: 'AI Analyses Run', value: 500000, suffix: '+' },
-    { label: 'Reviews Analyzed', value: 2500000, suffix: '+' },
-    { label: 'Listings Optimized', value: 150000, suffix: '+' }
+  const stats: {
+    label: string;
+    value?: number;
+    suffix?: string;
+    display?: string;
+  }[] = [
+    { label: 'Resource types', value: 6, suffix: '' },
+    { label: 'MCP-compatible AI clients', display: '∞' },
+    { label: 'Integration surfaces', value: 2, suffix: '' },
+    { label: 'Isolated per project', value: 100, suffix: '%' }
   ];
 
   return (
-    <section className='border-y border-neutral-100 bg-neutral-50 py-16 md:py-20'>
+    <section className='border-border bg-muted/30 border-y py-16 md:py-20'>
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-        <p className='mb-10 text-center text-xs font-semibold tracking-widest text-neutral-400 uppercase'>
-          Trusted by Amazon Sellers Worldwide
+        <p className='text-muted-foreground mb-10 text-center text-xs font-semibold tracking-widest uppercase'>
+          Built for how AI-powered teams actually work
         </p>
 
         <div className='grid grid-cols-2 gap-8 md:grid-cols-4'>
@@ -28,13 +33,18 @@ export default function TrustedBy() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className='text-center'
             >
-              <NumberFlow
-                value={stat.value}
-                className='text-3xl font-bold text-neutral-900 md:text-4xl'
-                format={{ notation: 'compact' }}
-                suffix={stat.suffix}
-              />
-              <div className='mt-1.5 text-sm text-neutral-500'>
+              {stat.display ? (
+                <div className='text-foreground text-3xl font-bold md:text-4xl'>
+                  {stat.display}
+                </div>
+              ) : (
+                <NumberFlow
+                  value={stat.value ?? 0}
+                  className='text-foreground text-3xl font-bold md:text-4xl'
+                  suffix={stat.suffix}
+                />
+              )}
+              <div className='text-muted-foreground mt-1.5 text-sm'>
                 {stat.label}
               </div>
             </motion.div>

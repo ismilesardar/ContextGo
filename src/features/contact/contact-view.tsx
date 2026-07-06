@@ -53,7 +53,7 @@ export function ContactView() {
   };
 
   return (
-    <div className='h-screen bg-white'>
+    <div className='bg-background h-screen'>
       <Navbar />
 
       <div className='mt-20 h-[calc(100%-5rem)] overflow-y-auto'>
@@ -64,10 +64,10 @@ export function ContactView() {
               animate={{ opacity: 1, y: 0 }}
               className='text-center'
             >
-              <h1 className='text-3xl font-bold tracking-tight text-neutral-900 md:text-4xl'>
+              <h1 className='text-foreground text-3xl font-bold tracking-tight md:text-4xl'>
                 Get in touch
               </h1>
-              <p className='mt-4 text-lg text-neutral-500'>
+              <p className='text-muted-foreground mt-4 text-lg'>
                 Have a question, feedback, or want to learn more? We&apos;d love
                 to hear from you.
               </p>
@@ -81,10 +81,10 @@ export function ContactView() {
             >
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                className='rounded-xl border border-neutral-200 bg-white p-8 shadow-sm'
+                className='border-border bg-card rounded-xl border p-8 shadow-sm'
               >
                 {isSuccess && (
-                  <div className='mb-6 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'>
+                  <div className='border-success/30 bg-success/10 text-success mb-6 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm'>
                     <Check className='h-4 w-4' />
                     Message sent successfully! We&apos;ll get back to you soon.
                   </div>
@@ -95,7 +95,7 @@ export function ContactView() {
                     <div>
                       <label
                         htmlFor='name'
-                        className='mb-1.5 block text-sm font-medium text-neutral-700'
+                        className='text-foreground mb-1.5 block text-sm font-medium'
                       >
                         Name
                       </label>
@@ -104,10 +104,10 @@ export function ContactView() {
                         type='text'
                         {...register('name')}
                         placeholder='Your name'
-                        className='block w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 focus:outline-none'
+                        className='border-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full rounded-md border px-4 py-2.5 text-sm transition-colors focus:ring-1 focus:outline-none'
                       />
                       {errors.name && (
-                        <p className='mt-1 text-xs text-red-500'>
+                        <p className='text-destructive mt-1 text-xs'>
                           {errors.name.message}
                         </p>
                       )}
@@ -115,7 +115,7 @@ export function ContactView() {
                     <div>
                       <label
                         htmlFor='email'
-                        className='mb-1.5 block text-sm font-medium text-neutral-700'
+                        className='text-foreground mb-1.5 block text-sm font-medium'
                       >
                         Email
                       </label>
@@ -124,10 +124,10 @@ export function ContactView() {
                         type='email'
                         {...register('email')}
                         placeholder='you@example.com'
-                        className='block w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 focus:outline-none'
+                        className='border-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full rounded-md border px-4 py-2.5 text-sm transition-colors focus:ring-1 focus:outline-none'
                       />
                       {errors.email && (
-                        <p className='mt-1 text-xs text-red-500'>
+                        <p className='text-destructive mt-1 text-xs'>
                           {errors.email.message}
                         </p>
                       )}
@@ -137,7 +137,7 @@ export function ContactView() {
                   <div>
                     <label
                       htmlFor='subject'
-                      className='mb-1.5 block text-sm font-medium text-neutral-700'
+                      className='text-foreground mb-1.5 block text-sm font-medium'
                     >
                       Subject
                     </label>
@@ -146,10 +146,10 @@ export function ContactView() {
                       type='text'
                       {...register('subject')}
                       placeholder='How can we help?'
-                      className='block w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 focus:outline-none'
+                      className='border-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full rounded-md border px-4 py-2.5 text-sm transition-colors focus:ring-1 focus:outline-none'
                     />
                     {errors.subject && (
-                      <p className='mt-1 text-xs text-red-500'>
+                      <p className='text-destructive mt-1 text-xs'>
                         {errors.subject.message}
                       </p>
                     )}
@@ -158,7 +158,7 @@ export function ContactView() {
                   <div>
                     <label
                       htmlFor='message'
-                      className='mb-1.5 block text-sm font-medium text-neutral-700'
+                      className='text-foreground mb-1.5 block text-sm font-medium'
                     >
                       Message
                     </label>
@@ -167,10 +167,10 @@ export function ContactView() {
                       rows={6}
                       {...register('message')}
                       placeholder="Tell us more about what you're looking for..."
-                      className='block w-full resize-y rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 focus:outline-none'
+                      className='border-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full resize-y rounded-md border px-4 py-2.5 text-sm transition-colors focus:ring-1 focus:outline-none'
                     />
                     {errors.message && (
-                      <p className='mt-1 text-xs text-red-500'>
+                      <p className='text-destructive mt-1 text-xs'>
                         {errors.message.message}
                       </p>
                     )}
@@ -179,7 +179,7 @@ export function ContactView() {
                   <button
                     type='submit'
                     disabled={isSubmitting}
-                    className='inline-flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto'
+                    className='bg-primary text-primary-foreground hover:bg-primary/90 inline-flex w-full items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto'
                   >
                     {isSubmitting ? (
                       <>
@@ -196,13 +196,13 @@ export function ContactView() {
                 </div>
               </form>
 
-              <div className='mt-8 text-center text-sm text-neutral-400'>
+              <div className='text-muted-foreground mt-8 text-center text-sm'>
                 Or email us directly at{' '}
                 <a
-                  href='mailto:hello@listinglens.com'
-                  className='font-medium text-neutral-900 underline underline-offset-2 hover:text-neutral-700'
+                  href='mailto:support@contextgo.app'
+                  className='text-foreground hover:text-foreground/80 font-medium underline underline-offset-2'
                 >
-                  shibsa.help@gmail.com
+                  support@contextgo.app
                 </a>
               </div>
             </motion.div>

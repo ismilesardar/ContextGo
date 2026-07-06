@@ -2,67 +2,43 @@
 
 import { motion } from 'motion/react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Shield, Bot, Sparkles, ArrowRight } from 'lucide-react';
+import { GitBranch, Layers, Plug, ArrowRight } from 'lucide-react';
 import { Navbar, Footer } from '@/components/landing-page';
 import { APP_NAME } from '@/config/url.config';
 
-const MILESTONES = [
-  {
-    year: '2024',
-    event: `${APP_NAME} founded with a mission to simplify Amazon selling with AI`
-  },
-  {
-    year: '2024 Q3',
-    event: 'Launched our first wave of AI-powered listing tools'
-  },
-  {
-    year: '2025 Q1',
-    event: 'Expanded into analytics and review insights'
-  },
-  {
-    year: '2025 Q3',
-    event: 'Added AI content generation tools'
-  },
-  {
-    year: '2026',
-    event: 'Continued investing in AI to help sellers grow'
-  }
-];
-
 const VALUES = [
   {
-    icon: Bot,
-    title: 'AI-First Approach',
-    desc: 'We believe AI should make complex tasks simple. Every tool is built with intelligent automation at its core.'
+    icon: GitBranch,
+    title: 'Governed, versioned knowledge',
+    desc: 'Every Resource keeps full version history with an explicit Main pointer — nothing reaches an AI client until an org admin says it should.'
   },
   {
-    icon: Shield,
-    title: 'Seller-Centric',
-    desc: 'Every feature we build starts with a real Amazon seller problem. We eat our own dogfood.'
+    icon: Plug,
+    title: 'Works with any AI client',
+    desc: `We built ${APP_NAME} around open standards — MCP and a public API — so it plugs into Claude Code, ChatGPT, Cursor, Copilot, and whatever comes next.`
   },
   {
-    icon: Sparkles,
-    title: 'Continuous Innovation',
-    desc: 'The Amazon marketplace evolves fast — we ship updates continuously to keep you ahead.'
+    icon: Layers,
+    title: 'Isolated by design',
+    desc: 'Every organization, project, and resource is scoped and permissioned from the ground up — knowledge never leaks across projects by accident.'
   }
 ];
 
 export function AboutView() {
   return (
-    <div className='h-screen bg-white'>
+    <div className='bg-background h-screen'>
       <Navbar />
 
       <div className='mt-20 h-[calc(100%-5rem)] overflow-y-auto'>
         {/* Hero */}
-        <section className='relative overflow-hidden bg-white pt-28 pb-16 md:pt-36 md:pb-24'>
-          <div className='pointer-events-none absolute inset-0 bg-linear-to-b from-neutral-50 to-white' />
+        <section className='bg-background relative overflow-hidden pt-28 pb-16 md:pt-36 md:pb-24'>
+          <div className='from-muted/40 to-background pointer-events-none absolute inset-0 bg-linear-to-b' />
           <div className='relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8'>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <span className='inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600'>
+              <span className='border-border bg-muted text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium'>
                 About Us
               </span>
             </motion.div>
@@ -70,28 +46,28 @@ export function AboutView() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className='mt-6 text-4xl font-bold tracking-tight text-neutral-900 md:text-5xl lg:text-6xl'
+              className='text-foreground mt-6 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl'
             >
-              AI-powered tools built{' '}
-              <span className='bg-linear-to-r from-[var(--shibsa-brand-color)] to-orange-500 bg-clip-text text-transparent'>
-                for Amazon sellers
+              The knowledge layer{' '}
+              <span className='from-primary to-primary/60 bg-linear-to-r bg-clip-text text-transparent'>
+                for AI-powered teams
               </span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className='mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-neutral-500'
+              className='text-muted-foreground mx-auto mt-6 max-w-2xl text-lg leading-relaxed'
             >
-              {APP_NAME} is a complete suite of AI-powered tools that help
-              Amazon sellers optimize listings and grow their business — all
-              from one dashboard.
+              {APP_NAME} gives organizations a single, governed source of
+              project knowledge — so every AI tool your team uses works from the
+              same approved standards.
             </motion.p>
           </div>
         </section>
 
         {/* Mission */}
-        <section className='border-y border-neutral-100 bg-neutral-50 py-20'>
+        <section className='border-border bg-muted/30 border-y py-20'>
           <div className='mx-auto max-w-5xl px-4 sm:px-6 lg:px-8'>
             <div className='grid items-center gap-12 lg:grid-cols-2'>
               <motion.div
@@ -99,24 +75,29 @@ export function AboutView() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
               >
-                <h2 className='text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl'>
+                <h2 className='text-foreground text-2xl font-bold tracking-tight md:text-3xl'>
                   Why we built {APP_NAME}
                 </h2>
-                <p className='mt-4 leading-relaxed text-neutral-500'>
-                  Selling on Amazon is incredibly competitive. A single mistake
-                  on a listing can cost thousands in lost revenue.
+                <p className='text-muted-foreground mt-4 leading-relaxed'>
+                  AI tools are everywhere on a modern team — but each one only
+                  knows what you happen to paste into it. Architecture
+                  decisions, coding standards, and team workflows get
+                  re-explained constantly, and drift apart the moment two people
+                  phrase them differently.
                 </p>
-                <p className='mt-4 leading-relaxed text-neutral-500'>
-                  We built {APP_NAME} to give sellers a single command center
-                  where AI handles the heavy lifting.
+                <p className='text-muted-foreground mt-4 leading-relaxed'>
+                  We built {APP_NAME} to give organizations one governed,
+                  versioned place for that knowledge — Contexts, Instructions,
+                  Skills, Prompt Templates, Checklists, and Agent Profiles — and
+                  a single way to publish it to every AI client at once.
                 </p>
-                <p className='mt-4 leading-relaxed text-neutral-500'>
-                  No more jumping between spreadsheets, tools, and browser tabs.
-                  Everything you need is in one place.
+                <p className='text-muted-foreground mt-4 leading-relaxed'>
+                  No more re-explaining your standards to every tool. Publish
+                  once, and every AI assistant follows the same rules.
                 </p>
                 <Link
                   href='/auth/register'
-                  className='mt-6 inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-neutral-800'
+                  className='bg-primary text-primary-foreground hover:bg-primary/90 mt-6 inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold transition-all'
                 >
                   Get Started Free
                   <ArrowRight className='h-4 w-4' />
@@ -129,19 +110,19 @@ export function AboutView() {
                 className='grid grid-cols-2 gap-4'
               >
                 {[
-                  { label: 'AI Analyses', value: '500K+' },
-                  { label: 'Active Sellers', value: '10K+' },
-                  { label: 'Listings Optimized', value: '150K+' },
-                  { label: 'Uptime', value: '99.9%' }
+                  { label: 'Resource types', value: '6' },
+                  { label: 'MCP-compatible AI clients', value: '∞' },
+                  { label: 'Integration surfaces', value: 'MCP + API' },
+                  { label: 'Projects isolated', value: '100%' }
                 ].map((stat) => (
                   <div
                     key={stat.label}
-                    className='rounded-xl border border-neutral-200 bg-white p-5 text-center'
+                    className='border-border bg-card rounded-xl border p-5 text-center'
                   >
-                    <div className='text-2xl font-bold text-neutral-900'>
+                    <div className='text-foreground text-2xl font-bold'>
                       {stat.value}
                     </div>
-                    <div className='mt-1 text-sm text-neutral-500'>
+                    <div className='text-muted-foreground mt-1 text-sm'>
                       {stat.label}
                     </div>
                   </div>
@@ -155,7 +136,7 @@ export function AboutView() {
         <section className='py-20'>
           <div className='mx-auto max-w-5xl px-4 sm:px-6 lg:px-8'>
             <div className='mb-12 text-center'>
-              <h2 className='text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl'>
+              <h2 className='text-foreground text-2xl font-bold tracking-tight md:text-3xl'>
                 Our values
               </h2>
             </div>
@@ -169,15 +150,15 @@ export function AboutView() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: idx * 0.1 }}
-                    className='rounded-xl border border-neutral-200 bg-white p-6'
+                    className='border-border bg-card rounded-xl border p-6'
                   >
-                    <div className='mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50'>
-                      <Icon className='h-5 w-5 text-neutral-600' />
+                    <div className='border-border bg-muted mb-4 flex h-10 w-10 items-center justify-center rounded-lg border'>
+                      <Icon className='text-primary h-5 w-5' />
                     </div>
-                    <h3 className='text-lg font-semibold text-neutral-900'>
+                    <h3 className='text-foreground text-lg font-semibold'>
                       {value.title}
                     </h3>
-                    <p className='mt-2 text-sm leading-relaxed text-neutral-500'>
+                    <p className='text-muted-foreground mt-2 text-sm leading-relaxed'>
                       {value.desc}
                     </p>
                   </motion.div>
@@ -187,53 +168,25 @@ export function AboutView() {
           </div>
         </section>
 
-        {/* Timeline / Milestones */}
-        <section className='border-y border-neutral-100 bg-neutral-50 py-20'>
-          <div className='mx-auto max-w-3xl px-4 sm:px-6 lg:px-8'>
-            <div className='mb-12 text-center'>
-              <h2 className='text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl'>
-                Our journey
-              </h2>
-            </div>
-            <div className='relative space-y-8 pl-8 before:absolute before:top-2 before:left-3 before:h-[90%] before:w-px before:bg-neutral-300'>
-              {MILESTONES.map((m, idx) => (
-                <motion.div
-                  key={m.year}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className='relative'
-                >
-                  <div className='absolute top-1.5 -left-[26px] h-5 w-5 rounded-full border-2 border-[var(--shibsa-brand-color)] bg-white' />
-                  <span className='text-xs font-semibold text-[var(--shibsa-brand-color)]'>
-                    {m.year}
-                  </span>
-                  <p className='mt-1 text-sm text-neutral-600'>{m.event}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* CTA */}
-        <section className='py-20'>
+        <section className='border-border bg-muted/30 border-t py-20'>
           <div className='mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8'>
-            <h2 className='text-2xl font-bold tracking-tight text-neutral-900 md:text-3xl'>
-              Ready to transform your Amazon business?
+            <h2 className='text-foreground text-2xl font-bold tracking-tight md:text-3xl'>
+              Ready to give your AI tools a shared source of truth?
             </h2>
-            <p className='mt-4 text-lg text-neutral-500'>
-              Join thousands of sellers using {APP_NAME} to sell smarter.
+            <p className='text-muted-foreground mt-4 text-lg'>
+              Join teams using {APP_NAME} to organize and publish their project
+              knowledge.
             </p>
             <Link
               href='/auth/register'
-              className='mt-8 inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-8 py-4 text-base font-semibold text-white transition-all hover:bg-neutral-800'
+              className='bg-primary text-primary-foreground hover:bg-primary/90 mt-8 inline-flex items-center gap-2 rounded-md px-8 py-4 text-base font-semibold transition-all'
             >
               Get Started Free
               <ArrowRight className='h-4 w-4' />
             </Link>
-            <p className='mt-4 text-sm text-neutral-400'>
-              No credit card required &middot; Subscription based
+            <p className='text-muted-foreground mt-4 text-sm'>
+              No credit card required &middot; Cancel anytime
             </p>
           </div>
         </section>

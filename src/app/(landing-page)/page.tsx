@@ -2,8 +2,11 @@ import {
   Navbar,
   Hero,
   TrustedBy,
+  FeatureGrid,
   HowItWorks,
-  Testimonials,
+  UseCases,
+  FAQ,
+  PricingTeaser,
   CTA,
   Footer
 } from '@/components/landing-page';
@@ -23,11 +26,14 @@ const LandingPage = async () => {
   return (
     <main className='h-screen'>
       <Navbar />
-      <div className='mt-20 h-[calc(100%-5rem)] overflow-x-hidden overflow-y-auto bg-white'>
+      <div className='bg-background mt-20 h-[calc(100%-5rem)] overflow-x-hidden overflow-y-auto'>
         <Hero />
         <TrustedBy />
+        <FeatureGrid />
         <HowItWorks />
-        <Testimonials />
+        <UseCases />
+        <FAQ />
+        <PricingTeaser />
         <CTA />
         <Footer />
       </div>
