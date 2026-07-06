@@ -17,6 +17,7 @@ import {
   canManageProject
 } from '@/lib/permissions/project-access';
 import { instructionSchema } from '@/lib/zod-schema/instruction-schema';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const updateBodySchema = z.union([
   z.object({ status: z.enum(['draft', 'published']) }),
@@ -109,6 +110,20 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
         mainVersion: { select: { id: true, version: true } }
       }
     });
+
+    await recordProjectActivity({
+      projectId,
+      actorId: userId,
+      actorName: apiContext.session.user.name ?? 'Unknown',
+      action:
+        data.status === 'published'
+          ? 'instruction.published'
+          : 'instruction.unpublished',
+      resourceType: 'instruction',
+      resourceId: instructionId,
+      resourceTitle: instruction.title
+    });
+
     return NextResponse.json({ instruction });
   }
 
@@ -147,6 +162,16 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
     });
   });
 
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'instruction.updated',
+    resourceType: 'instruction',
+    resourceId: instructionId,
+    resourceTitle: instruction.title
+  });
+
   return NextResponse.json({ instruction });
 };
 
@@ -170,6 +195,16 @@ const deleteHandler: ApiHandler = async (_req, { apiContext, params }) => {
   }
 
   await prisma.instruction.delete({ where: { id: instructionId } });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'instruction.deleted',
+    resourceType: 'instruction',
+    resourceId: instructionId,
+    resourceTitle: existing.title
+  });
 
   return NextResponse.json({ success: true });
 };

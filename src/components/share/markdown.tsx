@@ -17,9 +17,10 @@ export function Markdown({
     // Wrap ReactMarkdown in a div to apply your styles
     <div
       className={cn(
-        'prose prose-sm prose-neutral max-w-none transition-all',
+        'prose prose-sm prose-neutral max-w-none min-w-0 transition-all',
         'prose-headings:leading-tight',
         'prose-a:font-medium prose-a:text-neutral-900 prose-a:underline-offset-2 prose-a:decoration-dotted prose-a:cursor-alias',
+        'prose-pre:max-w-full prose-pre:overflow-x-auto',
         className
       )}
     >

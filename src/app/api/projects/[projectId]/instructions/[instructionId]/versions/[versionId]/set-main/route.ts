@@ -14,6 +14,7 @@ import {
   getProjectAccess,
   canManageProject
 } from '@/lib/permissions/project-access';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const setMainHandler: ApiHandler = async (_req, { apiContext, params }) => {
   const { userId, workspaceId } = apiContext;
@@ -62,6 +63,16 @@ const setMainHandler: ApiHandler = async (_req, { apiContext, params }) => {
       updatedBy: { select: AUTHOR_SELECT },
       mainVersion: { select: { id: true, version: true } }
     }
+  });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'instruction_version.set_main',
+    resourceType: 'instruction',
+    resourceId: instructionId,
+    resourceTitle: updated.title
   });
 
   return NextResponse.json({ instruction: updated });

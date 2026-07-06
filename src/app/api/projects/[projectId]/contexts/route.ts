@@ -12,6 +12,7 @@ import {
 } from '@/lib/permissions/project-access';
 import { contextSchema } from '@/lib/zod-schema/context-schema';
 import { createSlug } from '@/utils/create-slug';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const AUTHOR_SELECT = { id: true, name: true, image: true } as const;
 
@@ -148,6 +149,16 @@ const createHandler: ApiHandler = async (
         mainVersion: { select: { id: true, version: true } }
       }
     });
+  });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'context.created',
+    resourceType: 'context',
+    resourceId: context.id,
+    resourceTitle: context.title
   });
 
   return NextResponse.json({ context }, { status: 201 });

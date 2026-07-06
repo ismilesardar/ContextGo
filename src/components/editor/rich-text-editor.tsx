@@ -27,6 +27,31 @@ export interface RichTextEditorProps {
   className?: string;
 }
 
+const STRIPPED_ATTRIBUTES = [
+  'style',
+  'class',
+  'id',
+  'bgcolor',
+  'color',
+  'face',
+  'width',
+  'height',
+  'align'
+];
+
+/**
+ * Pasted HTML often carries the source site's own inline styles (e.g. a
+ * dark "black background" code box). Strip presentational attributes so
+ * pasted content adopts the editor's own styling instead of the source's.
+ */
+function sanitizePastedHtml(html: string): string {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.body.querySelectorAll('*').forEach((el) => {
+    STRIPPED_ATTRIBUTES.forEach((attr) => el.removeAttribute(attr));
+  });
+  return doc.body.innerHTML;
+}
+
 /**
  * Shared rich text editor used by every resource type (Contexts today,
  * Instructions/Skills/Prompt Templates/Checklists later). Content is
@@ -57,9 +82,11 @@ export function RichTextEditor({
           'prose prose-sm dark:prose-invert max-w-none focus:outline-none',
           'min-h-[280px] max-h-[60vh] overflow-y-auto overflow-x-hidden break-words px-4 py-3',
           'prose-p:my-2 prose-headings:mt-3 prose-headings:mb-1 prose-headings:leading-tight',
-          'prose-ul:my-2 prose-ol:my-2 prose-li:my-0 prose-blockquote:my-2 prose-pre:my-2'
+          'prose-ul:my-2 prose-ol:my-2 prose-li:my-0 prose-blockquote:my-2 prose-pre:my-2',
+          'prose-pre:max-w-full prose-pre:overflow-x-auto'
         )
-      }
+      },
+      transformPastedHTML: sanitizePastedHtml
     },
     onUpdate: ({ editor }) => {
       onChange(editor.getMarkdown());

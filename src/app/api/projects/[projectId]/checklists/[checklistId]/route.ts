@@ -17,6 +17,7 @@ import {
   canManageProject
 } from '@/lib/permissions/project-access';
 import { checklistSchema } from '@/lib/zod-schema/checklist-schema';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const updateBodySchema = z.union([
   z.object({ status: z.enum(['draft', 'published']) }),
@@ -109,6 +110,20 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
         mainVersion: { select: { id: true, version: true } }
       }
     });
+
+    await recordProjectActivity({
+      projectId,
+      actorId: userId,
+      actorName: apiContext.session.user.name ?? 'Unknown',
+      action:
+        data.status === 'published'
+          ? 'checklist.published'
+          : 'checklist.unpublished',
+      resourceType: 'checklist',
+      resourceId: checklistId,
+      resourceTitle: checklist.title
+    });
+
     return NextResponse.json({ checklist });
   }
 
@@ -147,6 +162,16 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
     });
   });
 
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'checklist.updated',
+    resourceType: 'checklist',
+    resourceId: checklistId,
+    resourceTitle: checklist.title
+  });
+
   return NextResponse.json({ checklist });
 };
 
@@ -170,6 +195,16 @@ const deleteHandler: ApiHandler = async (_req, { apiContext, params }) => {
   }
 
   await prisma.checklist.delete({ where: { id: checklistId } });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'checklist.deleted',
+    resourceType: 'checklist',
+    resourceId: checklistId,
+    resourceTitle: existing.title
+  });
 
   return NextResponse.json({ success: true });
 };

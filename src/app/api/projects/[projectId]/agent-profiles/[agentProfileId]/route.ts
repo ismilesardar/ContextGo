@@ -19,6 +19,7 @@ import {
 } from '@/lib/permissions/project-access';
 import { agentProfileSchema } from '@/lib/zod-schema/agent-profile-schema';
 import { resolveAgentProfileResources } from '@/lib/api/resolve-agent-profile-resources';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const updateBodySchema = z.union([
   z.object({ status: z.enum(['draft', 'published']) }),
@@ -109,14 +110,31 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
     );
   }
 
+  const data = validation.data;
+
   const agentProfile = await prisma.agentProfile.update({
     where: { id: agentProfileId },
-    data: { ...validation.data, updatedById: userId },
+    data: { ...data, updatedById: userId },
     include: {
       createdBy: { select: AUTHOR_SELECT },
       updatedBy: { select: AUTHOR_SELECT },
       _count: { select: { resources: true } }
     }
+  });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action:
+      'status' in data
+        ? data.status === 'published'
+          ? 'agent_profile.published'
+          : 'agent_profile.unpublished'
+        : 'agent_profile.updated',
+    resourceType: 'agent_profile',
+    resourceId: agentProfileId,
+    resourceTitle: agentProfile.title
   });
 
   return NextResponse.json({ agentProfile });
@@ -146,6 +164,16 @@ const deleteHandler: ApiHandler = async (_req, { apiContext, params }) => {
   }
 
   await prisma.agentProfile.delete({ where: { id: agentProfileId } });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'agent_profile.deleted',
+    resourceType: 'agent_profile',
+    resourceId: agentProfileId,
+    resourceTitle: existing.title
+  });
 
   return NextResponse.json({ success: true });
 };

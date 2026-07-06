@@ -15,6 +15,7 @@ import {
 } from '@/lib/permissions/project-access';
 import { agentProfileResourcesSchema } from '@/lib/zod-schema/agent-profile-schema';
 import { resolveAgentProfileResources } from '@/lib/api/resolve-agent-profile-resources';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const putHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
   const { userId, workspaceId } = apiContext;
@@ -79,6 +80,17 @@ const putHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
   const resolvedResources = await resolveAgentProfileResources(
     agentProfile.resources
   );
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'agent_profile.resources_updated',
+    resourceType: 'agent_profile',
+    resourceId: agentProfileId,
+    resourceTitle: agentProfile.title,
+    metadata: { resourceCount: validation.data.resources.length }
+  });
 
   return NextResponse.json({
     agentProfile: { ...agentProfile, resources: resolvedResources }

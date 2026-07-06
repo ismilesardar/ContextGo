@@ -21,7 +21,10 @@ export const auditLogSchemaTB = z.object({
 const actionSchema = z.enum([
   // Program
   'workspace.created',
-  'workspace.updated'
+  'workspace.updated',
+  // MCP identities (org-level service accounts for MCP access)
+  'mcp_identity.created',
+  'mcp_identity.deleted'
 ]);
 
 export const auditLogTarget = z.union([
@@ -35,6 +38,12 @@ export const auditLogTarget = z.union([
         logo: true
       })
       .optional()
+  }),
+
+  z.object({
+    type: z.literal('mcp_identity'),
+    id: z.string(),
+    metadata: z.object({ name: z.string() }).optional()
   })
 
   //   z.object({

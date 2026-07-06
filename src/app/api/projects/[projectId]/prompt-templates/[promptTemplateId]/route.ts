@@ -17,6 +17,7 @@ import {
   canManageProject
 } from '@/lib/permissions/project-access';
 import { promptTemplateSchema } from '@/lib/zod-schema/prompt-template-schema';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const updateBodySchema = z.union([
   z.object({ status: z.enum(['draft', 'published']) }),
@@ -113,6 +114,20 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
         mainVersion: { select: { id: true, version: true } }
       }
     });
+
+    await recordProjectActivity({
+      projectId,
+      actorId: userId,
+      actorName: apiContext.session.user.name ?? 'Unknown',
+      action:
+        data.status === 'published'
+          ? 'prompt_template.published'
+          : 'prompt_template.unpublished',
+      resourceType: 'prompt_template',
+      resourceId: promptTemplateId,
+      resourceTitle: promptTemplate.title
+    });
+
     return NextResponse.json({ promptTemplate });
   }
 
@@ -151,6 +166,16 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
     });
   });
 
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'prompt_template.updated',
+    resourceType: 'prompt_template',
+    resourceId: promptTemplateId,
+    resourceTitle: promptTemplate.title
+  });
+
   return NextResponse.json({ promptTemplate });
 };
 
@@ -178,6 +203,16 @@ const deleteHandler: ApiHandler = async (_req, { apiContext, params }) => {
   }
 
   await prisma.promptTemplate.delete({ where: { id: promptTemplateId } });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'prompt_template.deleted',
+    resourceType: 'prompt_template',
+    resourceId: promptTemplateId,
+    resourceTitle: existing.title
+  });
 
   return NextResponse.json({ success: true });
 };

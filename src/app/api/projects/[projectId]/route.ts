@@ -13,6 +13,7 @@ import {
 } from '@/lib/permissions/project-access';
 import { projectSchema } from '@/lib/zod-schema/project-schema';
 import { z } from 'zod';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const updateBodySchema = z.union([
   z.object({ status: z.enum(['active', 'archived']) }),
@@ -82,6 +83,18 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
         archivedAt: data.status === 'archived' ? new Date() : null
       }
     });
+
+    await recordProjectActivity({
+      projectId,
+      actorId: userId,
+      actorName: apiContext.session.user.name ?? 'Unknown',
+      action:
+        data.status === 'archived' ? 'project.archived' : 'project.unarchived',
+      resourceType: 'project',
+      resourceId: projectId,
+      resourceTitle: updated.name
+    });
+
     return NextResponse.json({ project: updated });
   }
 
@@ -105,6 +118,16 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
   const updated = await prisma.project.update({
     where: { id: projectId },
     data
+  });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'project.updated',
+    resourceType: 'project',
+    resourceId: projectId,
+    resourceTitle: updated.name
   });
 
   return NextResponse.json({ project: updated });

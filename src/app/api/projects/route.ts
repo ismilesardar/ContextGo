@@ -34,11 +34,29 @@ const listHandler: ApiHandler = async (_req, { apiContext, searchParams }) => {
         : {}),
       ...(isAdmin ? {} : { members: { some: { userId } } })
     },
-    orderBy: { updatedAt: 'desc' },
-    include: { _count: { select: { members: true } } }
+    orderBy: { updatedAt: 'desc' }
   });
 
-  return NextResponse.json({ projects });
+  const mcpUserCounts = new Map<string, number>();
+  if (projects.length > 0) {
+    const grants = await prisma.mcpIdentityResourceGrant.groupBy({
+      by: ['projectId', 'mcpIdentityId'],
+      where: { projectId: { in: projects.map((p) => p.id) } }
+    });
+    for (const grant of grants) {
+      mcpUserCounts.set(
+        grant.projectId,
+        (mcpUserCounts.get(grant.projectId) ?? 0) + 1
+      );
+    }
+  }
+
+  const projectsWithCounts = projects.map((project) => ({
+    ...project,
+    _count: { mcpUsers: mcpUserCounts.get(project.id) ?? 0 }
+  }));
+
+  return NextResponse.json({ projects: projectsWithCounts });
 };
 
 const createHandler: ApiHandler = async (_req, { apiContext, body }) => {

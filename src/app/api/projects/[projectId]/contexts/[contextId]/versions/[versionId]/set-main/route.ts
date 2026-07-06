@@ -13,6 +13,7 @@ import {
   getProjectAccess,
   canManageProject
 } from '@/lib/permissions/project-access';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const AUTHOR_SELECT = { id: true, name: true, image: true } as const;
 
@@ -63,6 +64,16 @@ const setMainHandler: ApiHandler = async (_req, { apiContext, params }) => {
       updatedBy: { select: AUTHOR_SELECT },
       mainVersion: { select: { id: true, version: true } }
     }
+  });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'context_version.set_main',
+    resourceType: 'context',
+    resourceId: contextId,
+    resourceTitle: updated.title
   });
 
   return NextResponse.json({ context: updated });

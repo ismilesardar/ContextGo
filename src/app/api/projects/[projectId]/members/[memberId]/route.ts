@@ -11,6 +11,7 @@ import {
   canManageProject
 } from '@/lib/permissions/project-access';
 import { projectMemberRoleSchema } from '@/lib/zod-schema/project-schema';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 async function assertManageAccess(
   projectId: string,
@@ -63,6 +64,17 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
     }
   });
 
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'project_member.role_changed',
+    resourceType: 'project_member',
+    resourceId: memberId,
+    resourceTitle: updated.user.name,
+    metadata: { role: validation.data.role }
+  });
+
   return NextResponse.json({ member: updated });
 };
 
@@ -77,13 +89,26 @@ const deleteHandler: ApiHandler = async (_req, { apiContext, params }) => {
   }
 
   const member = await prisma.projectMember.findFirst({
-    where: { id: memberId, projectId }
+    where: { id: memberId, projectId },
+    include: {
+      user: { select: { id: true, name: true, email: true, image: true } }
+    }
   });
   if (!member) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
   await prisma.projectMember.delete({ where: { id: memberId } });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'project_member.removed',
+    resourceType: 'project_member',
+    resourceId: memberId,
+    resourceTitle: member.user.name
+  });
 
   return NextResponse.json({ success: true });
 };

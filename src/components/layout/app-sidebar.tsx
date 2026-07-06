@@ -32,12 +32,15 @@ import { UserDropdown } from '@/features/app-sidebar/components/user-dropdown';
 import { useRouteNavigation } from '@/hooks/use-route-navigation';
 import { ACCESS_TYPE, ROLES } from '@/utils/constants/organization-const';
 import { Spinner } from '../ui/spinner';
+import { usePermissions } from '@/hooks/workspace/use-workspace-has-permission';
 
 export function AppSidebar() {
   const { user } = useUserSession();
   const { currentArea } = useRouteNavigation();
   const params = useParams();
   const activeWorkspaceSlug = getSessionData('last_active_workspace');
+  const { role } = usePermissions();
+  const isOrgAdminRole = role === 'owner' || role === 'moderator';
 
   const { activeWorkspace } = useWorkspaceStore((state) => state);
 
@@ -179,7 +182,13 @@ export function AppSidebar() {
               {activeWorkspace ? (
                 <SideNavItems
                   navItems={sideNavItems()}
-                  pinnedItems={currentArea === 'general' ? pinnedNavItems : []}
+                  pinnedItems={
+                    currentArea === 'general'
+                      ? pinnedNavItems.filter(
+                          (item) => item.title !== 'MCP Users' || isOrgAdminRole
+                        )
+                      : []
+                  }
                   navType={currentArea}
                   workspaceSlug={workspaceSlug}
                   userPermission={userPermission}

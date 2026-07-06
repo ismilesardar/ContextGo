@@ -55,8 +55,8 @@ export function ProjectCard({
             <Badge variant='outline'>Active</Badge>
           )}
           <span className='text-muted-foreground flex items-center gap-1 text-xs'>
-            <Icons.users className='size-3.5' />
-            {project._count.members}
+            <Icons.robot className='size-3.5' />
+            {project._count.mcpUsers}
           </span>
         </div>
         <span className='text-muted-foreground text-xs'>

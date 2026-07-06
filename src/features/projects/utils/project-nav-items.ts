@@ -17,7 +17,6 @@ export const PROJECT_NAV_ITEMS: ProjectNavItem[] = [
   },
   { title: 'Checklists', segment: 'checklists', icon: 'clipboardX' },
   { title: 'Agent Profiles', segment: 'agent-profiles', icon: 'robot' },
-  { title: 'Approvals', segment: 'approvals', icon: 'shield' },
   { title: 'MCP', segment: 'mcp', icon: 'layout' },
   { title: 'Activity', segment: 'activity', icon: 'dashboard' }
 ];

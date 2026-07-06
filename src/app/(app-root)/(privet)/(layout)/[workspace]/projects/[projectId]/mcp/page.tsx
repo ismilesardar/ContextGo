@@ -1,13 +1,17 @@
-import { PlaceholderTab } from '@/features/projects/components/placeholder-tab';
+import type { Metadata } from 'next';
+import { APP_NAME } from '@/config/url.config';
+import { McpView } from '@/features/mcp/components/mcp-view';
 
-export default function McpPage() {
-  return (
-    <div className='p-6'>
-      <PlaceholderTab
-        icon='layout'
-        title='MCP not configured yet'
-        description="Expose this project's approved knowledge to Claude Code, Cursor, and other AI clients through an MCP server."
-      />
-    </div>
-  );
+export const metadata: Metadata = {
+  title: `MCP - ${APP_NAME}`
+};
+
+export default async function McpPage({
+  params
+}: {
+  params: Promise<{ workspace: string; projectId: string }>;
+}) {
+  const { workspace, projectId } = await params;
+
+  return <McpView workspaceSlug={workspace} projectId={projectId} />;
 }

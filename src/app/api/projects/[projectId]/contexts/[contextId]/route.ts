@@ -16,6 +16,7 @@ import {
   canManageProject
 } from '@/lib/permissions/project-access';
 import { contextSchema } from '@/lib/zod-schema/context-schema';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const AUTHOR_SELECT = { id: true, name: true, image: true } as const;
 
@@ -110,6 +111,20 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
         mainVersion: { select: { id: true, version: true } }
       }
     });
+
+    await recordProjectActivity({
+      projectId,
+      actorId: userId,
+      actorName: apiContext.session.user.name ?? 'Unknown',
+      action:
+        data.status === 'published'
+          ? 'context.published'
+          : 'context.unpublished',
+      resourceType: 'context',
+      resourceId: contextId,
+      resourceTitle: context.title
+    });
+
     return NextResponse.json({ context });
   }
 
@@ -148,6 +163,16 @@ const patchHandler: ApiHandler = async (_req, { apiContext, params, body }) => {
     });
   });
 
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'context.updated',
+    resourceType: 'context',
+    resourceId: contextId,
+    resourceTitle: context.title
+  });
+
   return NextResponse.json({ context });
 };
 
@@ -171,6 +196,16 @@ const deleteHandler: ApiHandler = async (_req, { apiContext, params }) => {
   }
 
   await prisma.context.delete({ where: { id: contextId } });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'context.deleted',
+    resourceType: 'context',
+    resourceId: contextId,
+    resourceTitle: existing.title
+  });
 
   return NextResponse.json({ success: true });
 };

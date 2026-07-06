@@ -13,6 +13,7 @@ import {
 } from '@/lib/permissions/project-access';
 import { promptTemplateSchema } from '@/lib/zod-schema/prompt-template-schema';
 import { createSlug } from '@/utils/create-slug';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 async function loadProject(projectId: string, workspaceId: string) {
   return prisma.project.findFirst({
@@ -147,6 +148,16 @@ const createHandler: ApiHandler = async (
         mainVersion: { select: { id: true, version: true } }
       }
     });
+  });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'prompt_template.created',
+    resourceType: 'prompt_template',
+    resourceId: promptTemplate.id,
+    resourceTitle: promptTemplate.title
   });
 
   return NextResponse.json({ promptTemplate }, { status: 201 });

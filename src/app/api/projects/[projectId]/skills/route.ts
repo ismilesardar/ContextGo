@@ -13,6 +13,7 @@ import {
 } from '@/lib/permissions/project-access';
 import { skillSchema } from '@/lib/zod-schema/skill-schema';
 import { createSlug } from '@/utils/create-slug';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 async function loadProject(projectId: string, workspaceId: string) {
   return prisma.project.findFirst({
@@ -147,6 +148,16 @@ const createHandler: ApiHandler = async (
         mainVersion: { select: { id: true, version: true } }
       }
     });
+  });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'skill.created',
+    resourceType: 'skill',
+    resourceId: skill.id,
+    resourceTitle: skill.title
   });
 
   return NextResponse.json({ skill }, { status: 201 });

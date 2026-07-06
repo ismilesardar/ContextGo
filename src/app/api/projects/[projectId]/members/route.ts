@@ -11,6 +11,7 @@ import {
   canManageProject
 } from '@/lib/permissions/project-access';
 import { projectMemberSchema } from '@/lib/zod-schema/project-schema';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 async function loadProject(projectId: string, workspaceId: string) {
   return prisma.project.findFirst({
@@ -109,6 +110,16 @@ const createHandler: ApiHandler = async (
     include: {
       user: { select: { id: true, name: true, email: true, image: true } }
     }
+  });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'project_member.added',
+    resourceType: 'project_member',
+    resourceId: member.id,
+    resourceTitle: member.user.name
   });
 
   return NextResponse.json({ member }, { status: 201 });

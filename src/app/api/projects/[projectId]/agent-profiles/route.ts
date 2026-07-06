@@ -13,6 +13,7 @@ import {
 } from '@/lib/permissions/project-access';
 import { agentProfileSchema } from '@/lib/zod-schema/agent-profile-schema';
 import { createSlug } from '@/utils/create-slug';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 async function loadProject(projectId: string, workspaceId: string) {
   return prisma.project.findFirst({
@@ -129,6 +130,16 @@ const createHandler: ApiHandler = async (
       updatedBy: { select: AUTHOR_SELECT },
       _count: { select: { resources: true } }
     }
+  });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'agent_profile.created',
+    resourceType: 'agent_profile',
+    resourceId: agentProfile.id,
+    resourceTitle: agentProfile.title
   });
 
   return NextResponse.json({ agentProfile }, { status: 201 });

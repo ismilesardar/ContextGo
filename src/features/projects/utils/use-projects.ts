@@ -19,7 +19,7 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   _count: {
-    members: number;
+    mcpUsers: number;
   };
 }
 

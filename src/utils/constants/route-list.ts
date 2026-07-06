@@ -35,6 +35,15 @@ export const pinnedNavItems: NavItem[] = [
     isAdmin: false,
     shortcut: ['a', 'a'],
     items: []
+  },
+  {
+    title: 'MCP Users',
+    url: '/mcp-users',
+    icon: 'robot',
+    isActive: false,
+    isAdmin: false,
+    shortcut: ['m', 'u'],
+    items: []
   }
 ];
 

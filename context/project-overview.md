@@ -11,7 +11,7 @@ ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge
 1. Build a centralized knowledge management platform for AI-first organizations.
 2. Ensure every project maintains completely isolated knowledge and permissions.
 3. Allow organizations to manage reusable Contexts, Instructions, Skills, Prompt Templates, Checklists, and Agent Profiles.
-4. Provide version control and approval workflows so only approved knowledge is used by AI.
+4. Provide version control so only knowledge an org admin has explicitly published is used by AI.
 5. Expose project knowledge through an MCP server and API so any supported AI client can consume it.
 6. Reduce repetitive prompting by allowing organizations to create reusable AI knowledge packages.
 7. Support teams of different roles (Engineering, Product, Marketing, HR, Operations, etc.) using the same platform.
@@ -25,10 +25,10 @@ ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge
 4. User enters the selected Project Workspace.
 5. User creates project-specific Resources such as Contexts, Instructions, Skills, Prompt Templates, Checklists, and Agent Profiles.
 6. Team members collaborate on Resources according to their permissions.
-7. Proposed changes go through the approval workflow before becoming active.
+7. Org admins publish approved versions directly — no separate review/approval step exists.
 8. AI clients retrieve approved project knowledge through MCP or API.
 9. Team members use any supported AI tool while automatically following the organization's approved standards.
-10. Project knowledge continuously evolves through versioning, approvals, and collaboration.
+10. Project knowledge continuously evolves through versioning and collaboration.
 
 ## Features
 
@@ -114,12 +114,7 @@ ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge
 - Change tracking
 
 ### Approval Workflow
-- Submit changes
-- Review requests
-- Approval process
-- Reject with feedback
-- Publish approved versions
-- Approval history
+**Removed from scope.** Org admins (owner/moderator) already fully control draft/publish status and the Main-version pointer directly on every resource type — there is no distinct "submitter" role to review, so a separate approve/reject step added no value. Publishing is a direct org-admin action, not a two-party workflow.
 
 ### Permissions
 - Organization roles
@@ -127,13 +122,11 @@ ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge
 - Resource permissions
 - Read permissions
 - Edit permissions
-- Approval permissions
 - Admin controls
 
 ### Activity
 - Project activity timeline
 - Resource updates
-- Approval history
 - Member activity
 - Audit events
 
@@ -175,7 +168,6 @@ ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge
 - Checklists
 - Agent Profiles
 - Version control
-- Approval workflow
 - Role-based permissions
 - Project activity
 - MCP server
@@ -201,7 +193,7 @@ ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge
 1. Organizations can create multiple isolated projects.
 2. Knowledge from one project can never be accessed by another project unless explicitly supported in the future.
 3. Users can manage Contexts, Instructions, Skills, Prompt Templates, Checklists, and Agent Profiles within a project.
-4. Every Resource supports versioning and approval before publication.
+4. Every Resource supports versioning, with publication controlled directly by org admins.
 5. Role-based permissions correctly restrict project and resource access.
 6. Agent Profiles successfully assemble approved Resources into reusable AI context packages.
 7. MCP and API endpoints can securely expose approved project knowledge.

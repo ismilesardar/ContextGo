@@ -13,6 +13,7 @@ import {
   getProjectAccess,
   canManageProject
 } from '@/lib/permissions/project-access';
+import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
 
 const deleteHandler: ApiHandler = async (_req, { apiContext, params }) => {
   const { userId, workspaceId } = apiContext;
@@ -71,6 +72,16 @@ const deleteHandler: ApiHandler = async (_req, { apiContext, params }) => {
   }
 
   await prisma.promptTemplateVersion.delete({ where: { id: versionId } });
+
+  await recordProjectActivity({
+    projectId,
+    actorId: userId,
+    actorName: apiContext.session.user.name ?? 'Unknown',
+    action: 'prompt_template_version.deleted',
+    resourceType: 'prompt_template',
+    resourceId: promptTemplateId,
+    resourceTitle: promptTemplate.title
+  });
 
   return NextResponse.json({ success: true });
 };

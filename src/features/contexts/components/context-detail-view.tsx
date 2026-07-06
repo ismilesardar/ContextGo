@@ -140,7 +140,7 @@ export function ContextDetailView({
       </div>
 
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]'>
-        <Card className='rounded-lg p-6'>
+        <Card className='min-w-0 rounded-lg p-6'>
           <RichTextViewer content={context.content} />
         </Card>
 

@@ -65,6 +65,9 @@ model User {
   agentProfilesCreated AgentProfile[] @relation("AgentProfileCreatedBy")
   agentProfilesUpdated AgentProfile[] @relation("AgentProfileUpdatedBy")
 
+  projectApiKeysCreated ProjectApiKey[] @relation("ProjectApiKeyCreatedBy")
+  mcpIdentitiesCreated McpIdentity[] @relation("McpIdentityCreatedBy")
+
   @@unique([email])
   @@map("user")
 }
@@ -178,6 +181,7 @@ model Organization {
   additionalImageTokenUsage  Int? @default(0)
 
   projects Project[]
+  mcpIdentities McpIdentity[]
 
   @@unique([slug])
   @@map("organization")
@@ -319,6 +323,9 @@ model Project {
   promptTemplates PromptTemplate[]
   checklists     Checklist[]
   agentProfiles  AgentProfile[]
+  activities     ProjectActivity[]
+  apiKeys        ProjectApiKey[]
+  mcpIdentityGrants McpIdentityResourceGrant[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -594,6 +601,77 @@ model ProjectMember {
   @@index([projectId])
   @@index([userId])
   @@map("project_member")
+}
+
+model ProjectActivity {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  actorId       String
+  actorName     String
+  action        String
+  resourceType  String?
+  resourceId    String?
+  resourceTitle String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  @@index([projectId, createdAt])
+  @@index([projectId, resourceType])
+  @@map("project_activity")
+}
+
+model ProjectApiKey {
+  id            String      @id @default(cuid())
+  projectId     String
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mcpIdentityId String
+  mcpIdentity   McpIdentity @relation(fields: [mcpIdentityId], references: [id], onDelete: Cascade)
+  name          String
+  keyPrefix     String
+  keyHash       String
+  secret        String? // raw key, stored (unlike keyHash-only PAT convention) so owners/moderators can re-copy a full client config later; null for keys created before this field existed
+  createdById   String
+  createdBy     User        @relation("ProjectApiKeyCreatedBy", fields: [createdById], references: [id])
+  createdAt     DateTime    @default(now())
+  lastUsedAt    DateTime?
+  revokedAt     DateTime?
+
+  @@index([projectId])
+  @@index([mcpIdentityId])
+  @@index([keyPrefix])
+  @@map("project_api_key")
+}
+
+model McpIdentity {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  createdById    String
+  createdBy      User     @relation("McpIdentityCreatedBy", fields: [createdById], references: [id])
+  createdAt      DateTime @default(now())
+  grants         McpIdentityResourceGrant[]
+  apiKeys        ProjectApiKey[]
+
+  @@index([organizationId])
+  @@map("mcp_identity")
+}
+
+model McpIdentityResourceGrant {
+  id            String      @id @default(cuid())
+  mcpIdentityId String
+  mcpIdentity   McpIdentity @relation(fields: [mcpIdentityId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  resourceType  String      // "context" | "instruction" | "skill" | "prompt_template" | "checklist" | "agent_profile"
+  resourceId    String
+  createdAt     DateTime    @default(now())
+
+  @@unique([mcpIdentityId, projectId, resourceType, resourceId])
+  @@index([mcpIdentityId, projectId])
+  @@index([projectId])
+  @@map("mcp_identity_resource_grant")
 }
 
 model ContactMessage {
