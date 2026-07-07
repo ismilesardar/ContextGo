@@ -4,19 +4,16 @@ import { motion } from 'motion/react';
 import Link from 'next/link';
 import {
   ArrowRight,
-  Bot,
   Check,
   Facebook,
-  FileStack,
-  GitBranch,
   Linkedin,
-  Plug,
   Sparkles,
   Star,
   User,
   X
 } from 'lucide-react';
 import { APP_NAME } from '@/config/url.config';
+import HeroNetworkDiagram from './HeroNetworkDiagram';
 
 // Placeholder destinations — swap for real profile URLs once they exist.
 const SOCIAL_LINKS = [
@@ -203,63 +200,8 @@ export default function Hero() {
                 </span>
               </div>
 
-              <div className='relative p-8'>
-                <div className='space-y-3'>
-                  {[
-                    {
-                      icon: FileStack,
-                      label: 'Contexts · Instructions · Skills'
-                    },
-                    {
-                      icon: GitBranch,
-                      label: 'Version history · Main pointer'
-                    },
-                    { icon: Plug, label: 'MCP server · Public API' }
-                  ].map((row, idx) => (
-                    <motion.div
-                      key={row.label}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.5 + idx * 0.1 }}
-                      className='border-border bg-background hover:border-primary/30 flex items-center gap-3 rounded-lg border px-4 py-3.5 transition-colors'
-                    >
-                      <div className='bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-md'>
-                        <row.icon className='text-primary h-4.5 w-4.5' />
-                      </div>
-                      <span className='text-foreground text-sm font-medium'>
-                        {row.label}
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Connector: MCP server flowing down to the AI model it serves */}
-                <div className='relative flex h-6 items-center pl-8.5'>
-                  <div className='bg-border h-full w-px' />
-                  <motion.div
-                    className='bg-primary absolute left-7.75 h-1.5 w-1.5 rounded-full'
-                    animate={{ top: ['0%', '100%'], opacity: [0, 1, 1, 0] }}
-                    transition={{
-                      duration: 1.6,
-                      repeat: Infinity,
-                      ease: 'easeInOut'
-                    }}
-                  />
-                </div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.9 }}
-                  className='border-primary/20 bg-primary/5 flex items-center gap-3 rounded-lg border px-4 py-3.5'
-                >
-                  <div className='bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-md'>
-                    <Bot className='text-primary h-4.5 w-4.5' />
-                  </div>
-                  <span className='text-foreground text-sm font-medium'>
-                    Claude · ChatGPT · Cursor · Copilot
-                  </span>
-                </motion.div>
+              <div className='relative'>
+                <HeroNetworkDiagram />
               </div>
             </div>
             {/* Floating badge */}

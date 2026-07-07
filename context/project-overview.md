@@ -4,7 +4,7 @@
 
 ## What
 
-ContextGO is a multi-tenant SaaS platform that acts as the centralized knowledge layer for organizations using AI. It enables companies to organize, govern, version, and distribute project-specific knowledge so that every AI tool (such as Claude Code, ChatGPT, Cursor, GitHub Copilot, or future AI platforms) can work using the same approved information and company standards. Each organization contains multiple isolated projects, and each project maintains its own independent knowledge resources. The platform is designed to eliminate inconsistent AI outputs, reduce onboarding time, preserve organizational knowledge, and ensure every team member and AI assistant follows the same architecture, workflows, and business rules.
+Primiso is a multi-tenant SaaS platform that acts as the centralized knowledge layer for organizations using AI. It enables companies to organize, govern, version, and distribute project-specific knowledge so that every AI tool (such as Claude Code, ChatGPT, Cursor, GitHub Copilot, or future AI platforms) can work using the same approved information and company standards. Each organization contains multiple isolated projects, and each project maintains its own independent knowledge resources. The platform is designed to eliminate inconsistent AI outputs, reduce onboarding time, preserve organizational knowledge, and ensure every team member and AI assistant follows the same architecture, workflows, and business rules.
 
 ## Goals
 

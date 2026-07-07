@@ -326,6 +326,7 @@ model Project {
   activities     ProjectActivity[]
   apiKeys        ProjectApiKey[]
   mcpIdentityGrants McpIdentityResourceGrant[]
+  mcpRequestLogs McpRequestLog[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -693,6 +694,19 @@ model McpIdentityResourceGrant {
   @@index([mcpIdentityId, projectId])
   @@index([projectId])
   @@map("mcp_identity_resource_grant")
+}
+
+model McpRequestLog {
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mcpIdentityId String
+  apiKeyId      String
+  receivedAt    DateTime  @default(now())
+  respondedAt   DateTime? // set only if the server successfully sent a response back
+
+  @@index([projectId, receivedAt])
+  @@map("mcp_request_log")
 }
 
 model ContactMessage {

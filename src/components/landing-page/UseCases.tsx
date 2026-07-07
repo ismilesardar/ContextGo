@@ -41,7 +41,7 @@ export default function UseCases() {
             transition={{ delay: 0.1 }}
             className='text-muted-foreground mt-4 text-lg'
           >
-            Wherever AI tools touch your workflow, ContextGO keeps them aligned.
+            Wherever AI tools touch your workflow, Primiso keeps them aligned.
           </motion.p>
         </div>
 

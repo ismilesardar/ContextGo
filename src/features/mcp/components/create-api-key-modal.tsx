@@ -65,7 +65,7 @@ function CreateApiKeyModalHelper({
     const configSnippet = JSON.stringify(
       {
         mcpServers: {
-          [createSlug(identityName) || 'contextgo']: {
+          [createSlug(identityName) || 'primiso']: {
             type: 'http',
             url: serverUrl,
             headers: {

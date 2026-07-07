@@ -7,6 +7,7 @@ import { useOverview } from '../utils/use-overview';
 import { OverviewStatTiles } from './overview-stat-tiles';
 import { ResourceBreakdownChart } from './resource-breakdown-chart';
 import { ActivityTrendChart } from './activity-trend-chart';
+import { McpRequestTrendChart } from './mcp-request-trend-chart';
 import { RecentActivityList } from './recent-activity-list';
 
 export default function UnifiedOverviewView() {
@@ -31,6 +32,11 @@ export default function UnifiedOverviewView() {
           isLoading={isLoading}
         />
       </div>
+
+      <McpRequestTrendChart
+        data={data?.mcpRequestTrend}
+        isLoading={isLoading}
+      />
 
       <RecentActivityList
         workspaceSlug={workspaceSlug}

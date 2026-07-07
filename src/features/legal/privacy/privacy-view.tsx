@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { APP_NAME } from '@/config/url.config';
 
-const SUPPORT_EMAIL = 'support@contextgo.app';
+const SUPPORT_EMAIL = 'support@primiso.app';
 
 export const PrivacyView = () => {
   return (

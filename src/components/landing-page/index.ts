@@ -5,7 +5,6 @@ import FeatureGrid from './FeatureGrid';
 import HowItWorks from './HowItWorks';
 import UseCases from './UseCases';
 import FAQ from './FAQ';
-import PricingTeaser from './PricingTeaser';
 import CTA from './CTA';
 import Footer from './Footer';
 
@@ -17,7 +16,6 @@ export {
   HowItWorks,
   UseCases,
   FAQ,
-  PricingTeaser,
   CTA,
   Footer
 };

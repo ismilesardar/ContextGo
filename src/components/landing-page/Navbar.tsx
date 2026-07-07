@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { APP_NAME } from '@/config/url.config';
-import { Menu, X } from 'lucide-react';
+import { ArrowRight, ChevronDown, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { FEATURES } from './FeatureGrid';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
+  const [isMobileFeaturesOpen, setIsMobileFeaturesOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,6 +58,62 @@ export default function Navbar() {
           {/* Desktop Nav */}
           <nav className='hidden items-center gap-8 md:flex'>
             <div className='flex items-center gap-6'>
+              <div
+                className='relative'
+                onMouseEnter={() => setIsFeaturesOpen(true)}
+                onMouseLeave={() => setIsFeaturesOpen(false)}
+              >
+                <button
+                  className='text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm font-medium transition-colors'
+                  aria-expanded={isFeaturesOpen}
+                >
+                  Features
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform ${isFeaturesOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {isFeaturesOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.15 }}
+                      className='border-border bg-popover absolute top-full left-1/2 z-50 mt-3 w-140 -translate-x-1/2 rounded-xl border p-3 shadow-lg'
+                    >
+                      <div className='grid grid-cols-2 gap-1'>
+                        {FEATURES.map((feature) => (
+                          <div
+                            key={feature.title}
+                            className='group/item hover:bg-accent flex items-start gap-3 rounded-lg p-3 transition-colors'
+                          >
+                            <div className='border-border bg-muted flex h-9 w-9 shrink-0 items-center justify-center rounded-md border'>
+                              <feature.icon className='text-primary h-4.5 w-4.5' />
+                            </div>
+                            <div>
+                              <p className='text-foreground text-sm font-semibold'>
+                                {feature.title}
+                              </p>
+                              <p className='text-muted-foreground mt-0.5 text-xs leading-relaxed'>
+                                {feature.desc}
+                              </p>
+                              <Link
+                                href={feature.href}
+                                className='text-primary mt-1.5 flex max-h-0 items-center gap-1 text-xs font-medium opacity-0 transition-all duration-200 group-hover/item:max-h-6 group-hover/item:opacity-100'
+                                onClick={() => setIsFeaturesOpen(false)}
+                              >
+                                Learn more
+                                <ArrowRight className='h-3 w-3' />
+                              </Link>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               <Link
                 href='/about'
                 className='text-muted-foreground hover:text-foreground text-sm font-medium transition-colors'
@@ -114,6 +173,50 @@ export default function Navbar() {
             className='bg-background border-border overflow-hidden border-b md:hidden'
           >
             <div className='flex flex-col gap-4 px-4 py-6'>
+              <button
+                className='text-muted-foreground hover:text-foreground flex items-center justify-between py-2 text-base font-medium transition-colors'
+                onClick={() => setIsMobileFeaturesOpen(!isMobileFeaturesOpen)}
+                aria-expanded={isMobileFeaturesOpen}
+              >
+                Features
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${isMobileFeaturesOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+              <AnimatePresence>
+                {isMobileFeaturesOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className='-mt-2 overflow-hidden'
+                  >
+                    <div className='flex flex-col gap-1 pb-2'>
+                      {FEATURES.map((feature) => (
+                        <Link
+                          key={feature.title}
+                          href={feature.href}
+                          className='hover:bg-accent flex items-center gap-3 rounded-lg p-2 transition-colors'
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            setIsMobileFeaturesOpen(false);
+                          }}
+                        >
+                          <div className='border-border bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded-md border'>
+                            <feature.icon className='text-primary h-4 w-4' />
+                          </div>
+                          <span className='text-foreground text-sm font-medium'>
+                            {feature.title}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className='bg-border h-px' />
+
               <Link
                 href='/about'
                 className='text-muted-foreground hover:text-foreground py-2 text-base font-medium transition-colors'

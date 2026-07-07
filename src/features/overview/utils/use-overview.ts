@@ -13,7 +13,7 @@ export interface WorkspaceOverviewCounts {
   checklists: number;
   agentProfiles: number;
   mcpUsers: number;
-  libraryTemplates: number;
+  mcpRequestsTotal: number;
 }
 
 export interface ResourceBreakdownItem {
@@ -25,6 +25,12 @@ export interface ResourceBreakdownItem {
 export interface ActivityTrendPoint {
   date: string;
   count: number;
+}
+
+export interface McpRequestTrendPoint {
+  date: string;
+  received: number;
+  sent: number;
 }
 
 export interface RecentActivityItem {
@@ -42,6 +48,7 @@ export interface WorkspaceOverview {
   counts: WorkspaceOverviewCounts;
   resourceBreakdown: ResourceBreakdownItem[];
   activityTrend: ActivityTrendPoint[];
+  mcpRequestTrend: McpRequestTrendPoint[];
   recentActivity: RecentActivityItem[];
 }
 

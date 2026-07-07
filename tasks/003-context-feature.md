@@ -2,7 +2,7 @@
 
 ## Goal
 
-Implement the complete Context feature inside project for ContextGO.
+Implement the complete Context feature inside project for Primiso.
 
 This is the first real Resource implementation and will become the reference architecture for all future resource types:
 

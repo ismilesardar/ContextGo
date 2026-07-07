@@ -12,7 +12,7 @@ export interface WorkspaceOverviewCounts {
   checklists: number;
   agentProfiles: number;
   mcpUsers: number;
-  libraryTemplates: number;
+  mcpRequestsTotal: number;
 }
 
 export interface ResourceBreakdownItem {
@@ -24,6 +24,12 @@ export interface ResourceBreakdownItem {
 export interface ActivityTrendPoint {
   date: string;
   count: number;
+}
+
+export interface McpRequestTrendPoint {
+  date: string;
+  received: number;
+  sent: number;
 }
 
 export interface RecentActivityItem {
@@ -41,6 +47,7 @@ export interface WorkspaceOverview {
   counts: WorkspaceOverviewCounts;
   resourceBreakdown: ResourceBreakdownItem[];
   activityTrend: ActivityTrendPoint[];
+  mcpRequestTrend: McpRequestTrendPoint[];
   recentActivity: RecentActivityItem[];
 }
 
@@ -74,7 +81,7 @@ export async function getWorkspaceOverview(
     checklists,
     agentProfiles,
     mcpUsers,
-    libraryTemplates
+    mcpRequestsTotal
   ] = await Promise.all([
     prisma.context.count({ where: projectWhere }),
     prisma.instruction.count({ where: projectWhere }),
@@ -83,7 +90,7 @@ export async function getWorkspaceOverview(
     prisma.checklist.count({ where: projectWhere }),
     prisma.agentProfile.count({ where: projectWhere }),
     prisma.mcpIdentity.count({ where: { organizationId: workspaceId } }),
-    prisma.libraryTemplate.count()
+    prisma.mcpRequestLog.count({ where: projectWhere })
   ]);
 
   const counts: WorkspaceOverviewCounts = {
@@ -95,7 +102,7 @@ export async function getWorkspaceOverview(
     checklists,
     agentProfiles,
     mcpUsers,
-    libraryTemplates
+    mcpRequestsTotal
   };
 
   const resourceBreakdown: ResourceBreakdownItem[] = [
@@ -113,13 +120,14 @@ export async function getWorkspaceOverview(
 
   let recentActivity: RecentActivityItem[] = [];
   const activityTrend: ActivityTrendPoint[] = [];
+  const mcpRequestTrend: McpRequestTrendPoint[] = [];
 
   if (projectIds.length > 0) {
     const trendStart = new Date();
     trendStart.setDate(trendStart.getDate() - (TREND_DAYS - 1));
     trendStart.setHours(0, 0, 0, 0);
 
-    const [recentRows, trendRows] = await Promise.all([
+    const [recentRows, trendRows, mcpRequestRows] = await Promise.all([
       prisma.projectActivity.findMany({
         where: projectWhere,
         orderBy: { createdAt: 'desc' },
@@ -129,6 +137,10 @@ export async function getWorkspaceOverview(
       prisma.projectActivity.findMany({
         where: { ...projectWhere, createdAt: { gte: trendStart } },
         select: { createdAt: true }
+      }),
+      prisma.mcpRequestLog.findMany({
+        where: { ...projectWhere, receivedAt: { gte: trendStart } },
+        select: { receivedAt: true, respondedAt: true }
       })
     ]);
 
@@ -156,7 +168,30 @@ export async function getWorkspaceOverview(
     for (const [date, count] of bucket) {
       activityTrend.push({ date, count });
     }
+
+    const mcpBucket = new Map<string, { received: number; sent: number }>();
+    for (let i = 0; i < TREND_DAYS; i++) {
+      const d = new Date(trendStart);
+      d.setDate(d.getDate() + i);
+      mcpBucket.set(dayKey(d), { received: 0, sent: 0 });
+    }
+    for (const row of mcpRequestRows) {
+      const key = dayKey(row.receivedAt);
+      const entry = mcpBucket.get(key);
+      if (!entry) continue;
+      entry.received += 1;
+      if (row.respondedAt) entry.sent += 1;
+    }
+    for (const [date, { received, sent }] of mcpBucket) {
+      mcpRequestTrend.push({ date, received, sent });
+    }
   }
 
-  return { counts, resourceBreakdown, activityTrend, recentActivity };
+  return {
+    counts,
+    resourceBreakdown,
+    activityTrend,
+    mcpRequestTrend,
+    recentActivity
+  };
 }

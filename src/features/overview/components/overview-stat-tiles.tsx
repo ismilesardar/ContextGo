@@ -4,7 +4,7 @@ import {
   IconFolder,
   IconLayoutGrid,
   IconRobot,
-  IconBooks
+  IconChartBar
 } from '@tabler/icons-react';
 import {
   Card,
@@ -48,10 +48,10 @@ const TILES = [
     value: (counts: WorkspaceOverviewCounts) => counts.mcpUsers
   },
   {
-    key: 'libraryTemplates' as const,
-    label: 'Library Templates',
-    icon: IconBooks,
-    value: (counts: WorkspaceOverviewCounts) => counts.libraryTemplates
+    key: 'mcpRequestsTotal' as const,
+    label: 'Total MCP request',
+    icon: IconChartBar,
+    value: (counts: WorkspaceOverviewCounts) => counts.mcpRequestsTotal
   }
 ];
 

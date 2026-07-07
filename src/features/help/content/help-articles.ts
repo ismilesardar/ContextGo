@@ -17,7 +17,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
   {
     slug: 'getting-started',
     title: 'Getting Started',
-    description: 'What ContextGO is and how to set up your first project.'
+    description: 'What Primiso is and how to set up your first project.'
   },
   {
     slug: 'resources',
@@ -50,16 +50,16 @@ export const HELP_CATEGORIES: HelpCategory[] = [
 export const HELP_ARTICLES: HelpArticle[] = [
   // ── Getting Started ──────────────────────────────────────────────
   {
-    slug: 'what-is-contextgo',
+    slug: 'what-is-primiso',
     categorySlug: 'getting-started',
-    title: 'What is ContextGO',
+    title: 'What is Primiso',
     summary:
       'The centralized knowledge layer that keeps every AI tool your team uses working from the same playbook.',
-    content: `ContextGO is a multi-tenant platform that acts as the centralized knowledge layer for organizations using AI. It lets you organize, govern, version, and distribute project-specific knowledge so that every AI tool your team relies on — Claude Code, ChatGPT, Cursor, GitHub Copilot, or whatever comes next — works from the same approved information and standards.
+    content: `Primiso is a multi-tenant platform that acts as the centralized knowledge layer for organizations using AI. It lets you organize, govern, version, and distribute project-specific knowledge so that every AI tool your team relies on — Claude Code, ChatGPT, Cursor, GitHub Copilot, or whatever comes next — works from the same approved information and standards.
 
 ## The problem it solves
 
-Without a shared source of truth, every person (and every AI assistant) ends up improvising: different naming conventions, different assumptions about architecture, different business rules. ContextGO eliminates that drift by giving your organization one place to define "how we do things," and one place for AI tools to read it from.
+Without a shared source of truth, every person (and every AI assistant) ends up improvising: different naming conventions, different assumptions about architecture, different business rules. Primiso eliminates that drift by giving your organization one place to define "how we do things," and one place for AI tools to read it from.
 
 ## How it's organized
 
@@ -85,7 +85,7 @@ The result: every team member, and every AI tool they use, follows the same arch
     title: 'Organizations & Members',
     summary:
       'Create your organization, invite your team, and understand the roles that control who can do what.',
-    content: `An **Organization** is the top-level container in ContextGO — everything else (projects, resources, billing) belongs to one. Most people only ever belong to one organization, but you can be a member of several.
+    content: `An **Organization** is the top-level container in Primiso — everything else (projects, resources, billing) belongs to one. Most people only ever belong to one organization, but you can be a member of several.
 
 ## Roles
 
@@ -96,7 +96,7 @@ Every member of an organization has a role:
 - **Member** — regular contributor. Access to specific projects is controlled separately via project membership.
 - **Viewer** — read-only.
 
-Owners and moderators are collectively referred to as **org admins** throughout ContextGO. They can act on any project in the organization without being explicitly added as a project member.
+Owners and moderators are collectively referred to as **org admins** throughout Primiso. They can act on any project in the organization without being explicitly added as a project member.
 
 ## Inviting people
 
@@ -419,7 +419,7 @@ This separates "I'm iterating on a draft" from "this is now the official version
     title: 'Roles & Permissions',
     summary:
       'Who can read, who can write, and who administers — at the organization and project level.',
-    content: `ContextGO has two layers of roles: **organization roles** and **project roles**.
+    content: `Primiso has two layers of roles: **organization roles** and **project roles**.
 
 ## Organization roles
 
@@ -433,7 +433,7 @@ Project membership grants access to a specific project's Resources. Read access 
 
 ## Why writes are gated to admins
 
-Since published Resources become the source of truth an organization's AI tools rely on, ContextGO deliberately keeps the "who can make something official" circle small and explicit, even though reading and discussing draft work is open to the whole project team.`
+Since published Resources become the source of truth an organization's AI tools rely on, Primiso deliberately keeps the "who can make something official" circle small and explicit, even though reading and discussing draft work is open to the whole project team.`
   },
   {
     slug: 'activity',
@@ -459,7 +459,7 @@ Activity is read-only and visible to anyone with access to the project — it's 
 
 ## What's in it
 
-Every Library template maps to one of the upstream repository's categories (instructions, agents, skills, workflows, cookbook recipes, plugins, hooks), and each one suggests which ContextGO resource type it best fits as — a default you can always override at import time. Templates carry the tags, title, and description their author wrote, so you can tell what a template does before opening it.
+Every Library template maps to one of the upstream repository's categories (instructions, agents, skills, workflows, cookbook recipes, plugins, hooks), and each one suggests which Primiso resource type it best fits as — a default you can always override at import time. Templates carry the tags, title, and description their author wrote, so you can tell what a template does before opening it.
 
 ## Browsing and searching
 
@@ -495,7 +495,7 @@ The Library refreshes automatically on a daily schedule, so new or updated commu
     title: 'MCP & AI Integrations',
     summary:
       'Give Claude, ChatGPT, Cursor, or any MCP-compatible client access to exactly the published knowledge you choose.',
-    content: `ContextGO exposes your organization's approved knowledge to external AI tools through the **Model Context Protocol (MCP)** — an open standard supported by Claude, Cursor, and a growing list of other AI clients.
+    content: `Primiso exposes your organization's approved knowledge to external AI tools through the **Model Context Protocol (MCP)** — an open standard supported by Claude, Cursor, and a growing list of other AI clients.
 
 ## MCP Identities
 
@@ -515,7 +515,7 @@ An MCP client can only ever see Resources and Agent Profiles that are **both pub
 
 ## Connecting a client
 
-Point your MCP-compatible AI tool at ContextGO's MCP endpoint for the project, authenticating with the API key you generated. From there it can list and fetch the granted resources and Agent Profiles directly — no more re-pasting your architecture docs into every new chat.`
+Point your MCP-compatible AI tool at Primiso's MCP endpoint for the project, authenticating with the API key you generated. From there it can list and fetch the granted resources and Agent Profiles directly — no more re-pasting your architecture docs into every new chat.`
   },
 
   // ── Account & Billing ─────────────────────────────────────────────
@@ -541,14 +541,14 @@ From the Security tab you can:
 
 ## Sign-in methods
 
-ContextGO supports email/password sign-in as well as OAuth through Google and GitHub. You can use whichever method you originally signed up with, or add another from Security settings.`
+Primiso supports email/password sign-in as well as OAuth through Google and GitHub. You can use whichever method you originally signed up with, or add another from Security settings.`
   },
   {
     slug: 'billing-and-plans',
     categorySlug: 'account',
     title: 'Billing & Plans',
     summary: 'Subscription plans and how billing works per organization.',
-    content: `Billing in ContextGO is scoped **per organization**, not per user — every member of an organization shares the same plan.
+    content: `Billing in Primiso is scoped **per organization**, not per user — every member of an organization shares the same plan.
 
 ## Managing your subscription
 

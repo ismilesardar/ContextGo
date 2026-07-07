@@ -73,6 +73,19 @@ async function authenticate(req: Request, projectId: string) {
   return { apiKey };
 }
 
+function logMcpRequest(
+  projectId: string,
+  apiKeyId: string,
+  mcpIdentityId: string,
+  respondedAt: Date | null
+) {
+  prisma.mcpRequestLog
+    .create({
+      data: { projectId, apiKeyId, mcpIdentityId, respondedAt }
+    })
+    .catch((error) => console.error('Failed to log MCP request', error));
+}
+
 async function handleMcpRequest(req: Request, { params }: RouteContext) {
   const { projectId } = await params;
 
@@ -84,7 +97,19 @@ async function handleMcpRequest(req: Request, { params }: RouteContext) {
   const transport = new WebStandardStreamableHTTPServerTransport();
   await server.connect(transport);
 
-  return transport.handleRequest(req);
+  try {
+    const response = await transport.handleRequest(req);
+    logMcpRequest(
+      projectId,
+      auth.apiKey.id,
+      auth.apiKey.mcpIdentityId,
+      new Date()
+    );
+    return response;
+  } catch (error) {
+    logMcpRequest(projectId, auth.apiKey.id, auth.apiKey.mcpIdentityId, null);
+    throw error;
+  }
 }
 
 export async function GET(req: Request, ctx: RouteContext) {

@@ -43,7 +43,7 @@ export function IdentityCard({
     const configSnippet = JSON.stringify(
       {
         mcpServers: {
-          [createSlug(identity.name) || 'contextgo']: {
+          [createSlug(identity.name) || 'primiso']: {
             type: 'http',
             url: serverUrl,
             headers: {

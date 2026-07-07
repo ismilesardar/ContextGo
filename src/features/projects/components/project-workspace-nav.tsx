@@ -24,17 +24,34 @@ export function ProjectWorkspaceNav({
         const Icon = Icons[item.icon];
 
         return (
-          <Link
+          <div
             key={item.segment}
-            href={href}
             className={cn(
-              'text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-2 border-b-2 border-transparent px-3 py-3 text-sm font-medium transition-colors',
-              isActive && 'border-primary text-foreground'
+              'group flex shrink-0 items-center gap-1 border-b-2 border-transparent px-3 py-3',
+              isActive && 'border-primary'
             )}
           >
-            <Icon className='size-4' />
-            {item.title}
-          </Link>
+            <Link
+              href={href}
+              className={cn(
+                'text-muted-foreground hover:text-foreground flex items-center gap-2 text-sm font-medium transition-colors',
+                isActive && 'text-foreground'
+              )}
+            >
+              <Icon className='size-4' />
+              {item.title}
+            </Link>
+            <Link
+              href={`/help/article/${item.helpSlug}`}
+              target='_blank'
+              rel='noopener noreferrer'
+              title={`${item.title} documentation`}
+              aria-label={`${item.title} documentation`}
+              className='text-muted-foreground/60 hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100'
+            >
+              <Icons.help className='size-3.5' />
+            </Link>
+          </div>
         );
       })}
     </nav>

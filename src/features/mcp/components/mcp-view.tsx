@@ -18,7 +18,7 @@ function ConnectionInstructions({ projectId }: { projectId: string }) {
   const configSnippet = JSON.stringify(
     {
       mcpServers: {
-        contextgo: {
+        primiso: {
           type: 'http',
           url: serverUrl,
           headers: {

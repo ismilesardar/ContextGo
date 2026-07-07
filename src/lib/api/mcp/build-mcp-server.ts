@@ -28,7 +28,7 @@ function errorContent(message: string) {
  */
 export function buildMcpServer(projectId: string, grants: ApiKeyGrants) {
   const server = new McpServer({
-    name: 'contextgo-project-mcp',
+    name: 'primiso-project-mcp',
     version: '1.0.0'
   });
 

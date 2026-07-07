@@ -6,7 +6,6 @@ import {
   HowItWorks,
   UseCases,
   FAQ,
-  PricingTeaser,
   CTA,
   Footer
 } from '@/components/landing-page';
@@ -32,9 +31,8 @@ const LandingPage = async () => {
         <FeatureGrid />
         <HowItWorks />
         <UseCases />
-        <FAQ />
-        <PricingTeaser />
         <CTA />
+        <FAQ />
         <Footer />
       </div>
     </main>

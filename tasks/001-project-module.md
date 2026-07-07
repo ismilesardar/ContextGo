@@ -1,4 +1,4 @@
-Implement the first core feature of ContextGO: **Project Management**.
+Implement the first core feature of Primiso: **Project Management**.
 
 Before writing any code, read and follow:
 
