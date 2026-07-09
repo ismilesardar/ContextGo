@@ -1,7 +1,6 @@
 import KBar from '@/components/kbar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import Header from '@/components/layout/header';
-import { TokenBanner } from '@/components/layout/token-banner';
 import { WorkspaceInitializer } from '@/components/layout/workspace-initializer';
 import { WorkspaceSwitchOverlay } from '@/components/layout/workspace-switch-overlay';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -43,7 +42,6 @@ export default async function DashboardLayout({
         >
           <AppSidebar />
           <SidebarInset className='h-[calc(100dvh-15px)]! overflow-hidden! bg-white dark:bg-neutral-950/90'>
-            <TokenBanner />
             <Header />
             {/* page main content */}
             <ScrollArea className='h-[calc(100%-64px)] rounded-md'>

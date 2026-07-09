@@ -13,6 +13,7 @@ import {
 import { contextSchema } from '@/lib/zod-schema/context-schema';
 import { createSlug } from '@/utils/create-slug';
 import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
+import { requireUnderLimit } from '@/lib/api/plan/require-under-limit';
 
 const AUTHOR_SELECT = { id: true, name: true, image: true } as const;
 
@@ -114,6 +115,23 @@ const createHandler: ApiHandler = async (
       { status: 400 }
     );
   }
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: workspaceId },
+    select: { contextsLimit: true, lastResetDate: true }
+  });
+  const existingCount = await prisma.context.count({
+    where: {
+      projectId,
+      createdAt: { gte: organization?.lastResetDate ?? new Date(0) }
+    }
+  });
+  const limitCheck = requireUnderLimit({
+    currentCount: existingCount,
+    limit: organization?.contextsLimit ?? 10,
+    resourceLabel: 'contexts in this project'
+  });
+  if (!limitCheck.allowed) return limitCheck.response;
 
   const baseSlug = createSlug(validation.data.title) || 'context';
   const slug = await uniqueContextSlug(projectId, baseSlug);

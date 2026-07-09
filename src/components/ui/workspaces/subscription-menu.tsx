@@ -31,8 +31,14 @@ export default function SubscriptionMenu({
 }) {
   // const { id: workspaceId, role, plan, defaultProgramId } = useWorkspace();
   const activeMember = useWorkspaceStore((state) => state.activeMember);
-  const { id: workspaceId, creemId } =
-    useWorkspaceStore((state) => state.activeWorkspace) || {};
+  const {
+    id: workspaceId,
+    creemId,
+    subscriptionCanceledAt
+  } = useWorkspaceStore((state) => state.activeWorkspace) || {};
+  const refreshActiveWorkspace = useWorkspaceStore(
+    (state) => state.refreshActiveWorkspace
+  );
   const router = useRouter();
   // const { hasPermission } = usePermissions();
 
@@ -96,19 +102,33 @@ export default function SubscriptionMenu({
       return toast.error('No active subscription');
     }
 
-    const { data, error } = await authClient.creem.cancelSubscription();
+    // Bypasses the better-auth Creem plugin's own cancel-subscription
+    // endpoint — it resolves the subscription to cancel from a local table
+    // that can hold stale/duplicate rows, which caused it to try to cancel
+    // an already-canceled subscription. This route resolves the real
+    // current subscription from live Creem data instead.
+    try {
+      const res = await fetch('/api/billing/cancel-subscription', {
+        method: 'POST'
+      });
+      const data = await res.json();
 
-    if (error) {
+      if (!res.ok) {
+        toast.error(data?.error || 'Failed to cancel subscription');
+        return;
+      }
+
+      toast.success(data?.message || 'Subscription canceled successfully');
+      if (workspaceId) {
+        await refreshActiveWorkspace({ id: workspaceId });
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to cancel subscription'
+      );
+    } finally {
       setClicked(false);
-      toast.error(error.message || 'Failed to cancel subscription');
-      return;
     }
-
-    if (data?.success) {
-      toast.success(data.message || 'Subscription canceled successfully');
-    }
-
-    setClicked(false);
   };
 
   return (
@@ -132,12 +152,14 @@ export default function SubscriptionMenu({
                 onSelect={() => openBillingPortal()}
                 disabledTooltip={permissionsError}
               />
-              <MenuItem
-                icon={Icons.clipboardX}
-                label='Cancel subscription'
-                onSelect={handleCancelSubscription}
-                disabledTooltip={permissionsError}
-              />
+              {!subscriptionCanceledAt && (
+                <MenuItem
+                  icon={Icons.clipboardX}
+                  label='Cancel subscription'
+                  onSelect={handleCancelSubscription}
+                  disabledTooltip={permissionsError}
+                />
+              )}
             </Command.List>
           </Command>
         }

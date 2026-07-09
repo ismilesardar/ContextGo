@@ -62,8 +62,6 @@ export function userMonthlyPlanResetCron() {
           id: { in: orgsToReset.map((o) => o.id) }
         },
         data: {
-          systemTokenUsage: 0,
-          imageTokenUsage: 0,
           lastResetDate: now,
           nextResetDate: nextReset
         }

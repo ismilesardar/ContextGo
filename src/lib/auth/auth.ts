@@ -14,9 +14,7 @@ import {
   APP_NAME,
   BASE_URL,
   GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
-  STRIPE_SECRET_KEY,
-  STRIPE_WEBHOOK_SECRET
+  GOOGLE_CLIENT_SECRET
 } from '@/config/url.config';
 import { sendMail } from '../send-mail';
 import { ac, admin } from '../permissions/admin-permissions';
@@ -31,18 +29,41 @@ import {
 import { sendOrganizationInviteEmail } from '@/utils/email/organization-invite-email';
 import { creem } from '@creem_io/better-auth';
 
-import Stripe from 'stripe';
-import { stripe } from '@better-auth/stripe';
 import { createAuthMiddleware } from 'better-auth/api';
-import { STRIPE_PLANS } from '../plans/stripe';
-import { ROLES } from '@/utils/constants/organization-const';
 import { FREE_PLAN_DEFAULTS } from '@/utils/constants/pricing/pricing-plan-taglines';
 import { recordAuditLog } from '../api/audit-logs/record-audit-log';
 import prisma from '../prisma';
+import { applyPlanToOrganization } from '@/lib/billing/apply-plan-to-organization';
 
-// const stripeClient = new Stripe(STRIPE_SECRET_KEY!, {
-//   apiVersion: '2026-02-25.clover'
-// });
+/**
+ * Resolve the plan name for a subscription event. Prefers the live product
+ * id on the event (always current) over `metadata.planName`, which is only
+ * set at original checkout creation and goes stale after an in-app plan
+ * change made via the Creem `subscriptions.upgrade` API (which cannot
+ * update metadata).
+ */
+async function resolvePlanNameFromEvent({
+  product,
+  metadataPlanName
+}: {
+  product: unknown;
+  metadataPlanName: string | undefined;
+}): Promise<string | undefined> {
+  const productId =
+    typeof product === 'object' && product && 'id' in product
+      ? (product as { id: string }).id
+      : undefined;
+
+  if (productId) {
+    const { getPlanAndTierFromPriceId } = await import(
+      '@/utils/constants/pricing/pricing-plans'
+    );
+    const { plan } = getPlanAndTierFromPriceId({ priceId: productId });
+    if (plan) return plan.name;
+  }
+
+  return metadataPlanName;
+}
 
 export const auth = betterAuth({
   appName: `${APP_NAME}`,
@@ -107,7 +128,7 @@ export const auth = betterAuth({
         type: 'number',
         required: false,
         input: false,
-        defaultValue: 1
+        defaultValue: 0
       },
       workspacesLimit: {
         type: 'number',
@@ -194,21 +215,44 @@ export const auth = betterAuth({
         });
       },
       disableOrganizationDeletion: false,
+      organizationLimit: async (user) => {
+        const row = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { workspacesCount: true, workspacesLimit: true }
+        });
+        return (
+          (row?.workspacesCount ?? 0) >=
+          (row?.workspacesLimit ?? FREE_PLAN_DEFAULTS.workspacesLimit)
+        );
+      },
+      membershipLimit: async (_user, organization) => {
+        const row = await prisma.organization.findUnique({
+          where: { id: organization.id },
+          select: { usersLimit: true }
+        });
+        return row?.usersLimit ?? FREE_PLAN_DEFAULTS.usersLimit;
+      },
       organizationHooks: {
         async afterCreateOrganization(data) {
           const orgId = data.organization.id;
+          const now = new Date();
+          const nextReset = new Date(now);
+          nextReset.setMonth(nextReset.getMonth() + 1);
           // update the organization with the new fields and default values
           await prisma.organization.update({
             where: { id: orgId },
             data: {
-              updatedAt: new Date()
+              updatedAt: now,
+              lastResetDate: now,
+              nextResetDate: nextReset
             }
           });
           // user model update
           await prisma.user.update({
             where: { id: data.user.id },
             data: {
-              defaultWorkspace: data.organization.slug
+              defaultWorkspace: data.organization.slug,
+              workspacesCount: { increment: 1 }
             }
           });
         },
@@ -220,6 +264,11 @@ export const auth = betterAuth({
           } catch (err) {
             console.error('Failed to clean up workspace data:', err);
           }
+
+          await prisma.user.updateMany({
+            where: { id: data.user.id, workspacesCount: { gt: 0 } },
+            data: { workspacesCount: { decrement: 1 } }
+          });
         },
         async afterUpdateOrganization({ organization, user }) {
           if (organization) {
@@ -257,28 +306,6 @@ export const auth = betterAuth({
               required: false,
               defaultValue: FREE_PLAN_DEFAULTS.currentPlan
             },
-            systemTokenLimit: {
-              type: 'number',
-              required: false,
-              defaultValue: FREE_PLAN_DEFAULTS.systemTokenLimit
-            },
-            systemTokenUsage: {
-              type: 'number',
-              required: false,
-              defaultValue: 0
-            },
-            imageTokenLimit: {
-              type: 'number',
-              required: false,
-              input: false,
-              defaultValue: FREE_PLAN_DEFAULTS.imageTokenLimit
-            },
-            imageTokenUsage: {
-              type: 'number',
-              required: false,
-              input: false,
-              defaultValue: 0
-            },
             usersCount: {
               type: 'number',
               required: false,
@@ -291,25 +318,65 @@ export const auth = betterAuth({
               input: false,
               defaultValue: FREE_PLAN_DEFAULTS.usersLimit
             },
-            additionalSystemToken: {
+            mcpIdentitiesLimit: {
               type: 'number',
               required: false,
-              defaultValue: 0
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.mcpIdentitiesLimit
             },
-            additionalSystemTokenUsage: {
+            mcpApiKeysLimit: {
               type: 'number',
               required: false,
-              defaultValue: 0
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.mcpApiKeysLimit
             },
-            additionalImageToken: {
+            projectsLimit: {
               type: 'number',
               required: false,
-              defaultValue: 0
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.projectsLimit
             },
-            additionalImageTokenUsage: {
+            contextsLimit: {
               type: 'number',
               required: false,
-              defaultValue: 0
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.contextsLimit
+            },
+            instructionsLimit: {
+              type: 'number',
+              required: false,
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.instructionsLimit
+            },
+            skillsLimit: {
+              type: 'number',
+              required: false,
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.skillsLimit
+            },
+            promptTemplatesLimit: {
+              type: 'number',
+              required: false,
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.promptTemplatesLimit
+            },
+            checklistsLimit: {
+              type: 'number',
+              required: false,
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.checklistsLimit
+            },
+            agentProfilesLimit: {
+              type: 'number',
+              required: false,
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.agentProfilesLimit
+            },
+            mcpRequestsLimit: {
+              type: 'number',
+              required: false,
+              input: false,
+              defaultValue: FREE_PLAN_DEFAULTS.mcpRequestsLimit
             },
             lastResetDate: {
               type: 'date',
@@ -319,218 +386,241 @@ export const auth = betterAuth({
             nextResetDate: {
               type: 'date',
               required: false
+            },
+            subscriptionCanceledAt: {
+              type: 'date',
+              required: false,
+              input: false,
+              defaultValue: null
+            },
+            subscriptionEndsAt: {
+              type: 'date',
+              required: false,
+              input: false,
+              defaultValue: null
             }
           }
         }
       }
     }),
-    // stripe({
-    //   stripeClient,
-    //   stripeWebhookSecret: STRIPE_WEBHOOK_SECRET!,
-    //   createCustomerOnSignUp: true,
-    //   subscription: {
-    //     enabled: true,
-    //     plans: STRIPE_PLANS,
-    //     authorizeReference: async ({ user, referenceId, action }) => {
-    //       const memberItem = await prisma.member.findFirst({
-    //         where: {
-    //           organizationId: referenceId,
-    //           userId: user.id
-    //         }
-    //       });
-
-    //       if (
-    //         action === 'upgrade-subscription' ||
-    //         action === 'cancel-subscription' ||
-    //         action === 'restore-subscription'
-    //       ) {
-    //         return memberItem?.role === ROLES.OWNER;
-    //       }
-
-    //       return memberItem != null;
-    //     }
-    //   }
-    // }),
     creem({
       apiKey: process.env.CREEM_API_KEY!,
       webhookSecret: process.env.CREEM_WEBHOOK_SECRET,
-      testMode: true,
+      testMode: !process.env.CREEM_API_KEY?.startsWith('creem_live_'),
       defaultSuccessUrl: '/success',
       persistSubscriptions: true,
-      onCheckoutCompleted: async ({ customer, metadata, subscription }) => {
-        const organizationId = metadata?.organizationId as string | undefined;
-        if (!organizationId) return;
-
-        // ── Detect one-time top-up purchases ──
-        const topUpType = metadata?.topUpType as string | undefined;
-        const topUpAmount = metadata?.topUpAmount
-          ? parseInt(metadata.topUpAmount as string, 10)
-          : 0;
-
-        if (topUpType && topUpAmount > 0) {
-          const field =
-            topUpType === 'system'
-              ? 'additionalSystemToken'
-              : 'additionalImageToken';
-
-          const topUpDollars = metadata?.topUpDollars
-            ? parseInt(metadata.topUpDollars as string, 10)
-            : 0;
-
-          await prisma.$transaction([
-            prisma.organization.update({
-              where: { id: organizationId },
-              data: { [field]: { increment: topUpAmount } }
-            }),
-            prisma.topUpPurchase.create({
-              data: {
-                workspaceId: organizationId,
-                amount: topUpDollars,
-                tokens: topUpAmount,
-                tokenType: topUpType
-              }
-            })
-          ]);
-          return;
-        }
-      },
-      onSubscriptionActive: async ({ customer, metadata, status }) => {
+      onSubscriptionActive: async ({ customer, product, metadata, status }) => {
+        console.log('onSubscriptionActive =>', { metadata, status });
         const organizationId =
           (metadata?.organizationId as string | undefined) ??
           (metadata?.referenceId as string | undefined);
-        const planName = metadata?.planName as string | undefined;
-        if (!organizationId || !planName) return;
+        if (!organizationId) {
+          console.error(
+            'onSubscriptionActive: missing organizationId in metadata',
+            metadata
+          );
+          return;
+        }
 
-        const planPeriod = metadata?.planPeriod as string | undefined;
         const creemCustomerId =
           typeof customer === 'object' && 'id' in customer
             ? (customer as { id: string }).id
             : undefined;
 
-        const { PLANS } = await import(
-          '@/utils/constants/pricing/pricing-plans'
-        );
-        const planTemplate = PLANS.find(
-          (p) => p.name.toLowerCase() === planName.toLowerCase()
-        );
-
-        const now = new Date();
-        const nextReset = new Date(now);
-        nextReset.setDate(
-          nextReset.getDate() + (planPeriod === 'yearly' ? 365 : 30)
-        );
-
-        const result = await prisma.organization.updateMany({
-          where: { id: organizationId },
-          data: {
-            plan: planName,
-            creemId: creemCustomerId,
-            lastResetDate: now,
-            nextResetDate: nextReset,
-            systemTokenLimit: planTemplate?.limits.systemToken ?? 100,
-            systemTokenUsage: 0,
-            imageTokenLimit: planTemplate?.limits.imageToken ?? 0,
-            imageTokenUsage: 0,
-            usersLimit: planTemplate?.limits.users ?? 0
-          }
+        const planName = await resolvePlanNameFromEvent({
+          product,
+          metadataPlanName: metadata?.planName as string | undefined
         });
-
-        if (result.count === 0) {
+        if (!planName) {
+          console.error(
+            'onSubscriptionActive: could not resolve a plan from product or metadata',
+            metadata
+          );
           return;
         }
+
+        const updated = await applyPlanToOrganization({
+          organizationId,
+          planName,
+          creemCustomerId
+        });
+        if (updated) {
+          console.log(
+            `onSubscriptionActive: updated organization ${organizationId} to plan "${planName}"`
+          );
+        }
       },
-      onSubscriptionUpdate: async ({ customer, metadata, status }) => {
+      onSubscriptionUpdate: async ({ customer, product, metadata, status }) => {
+        console.log('onSubscriptionUpdate =>', { metadata, status });
         const organizationId =
           (metadata?.organizationId as string | undefined) ??
           (metadata?.referenceId as string | undefined);
-        const planName = metadata?.planName as string | undefined;
-        if (!organizationId || !planName) return;
+        if (!organizationId) {
+          console.error(
+            'onSubscriptionUpdate: missing organizationId in metadata',
+            metadata
+          );
+          return;
+        }
 
-        const planPeriod = metadata?.planPeriod as string | undefined;
         const creemCustomerId =
           typeof customer === 'object' && 'id' in customer
             ? (customer as { id: string }).id
             : undefined;
 
-        const { PLANS } = await import(
-          '@/utils/constants/pricing/pricing-plans'
-        );
-        const planTemplate = PLANS.find(
-          (p) => p.name.toLowerCase() === planName.toLowerCase()
-        );
-
-        const result = await prisma.organization.updateMany({
-          where: { id: organizationId },
-          data: {
-            plan: planName,
-            creemId: creemCustomerId,
-            systemTokenLimit: planTemplate?.limits.systemToken ?? 100,
-            imageTokenLimit: planTemplate?.limits.imageToken ?? 0,
-            usersLimit: planTemplate?.limits.users ?? 0
-          }
+        const planName = await resolvePlanNameFromEvent({
+          product,
+          metadataPlanName: metadata?.planName as string | undefined
         });
-
-        if (result.count === 0) {
+        if (!planName) {
+          console.error(
+            'onSubscriptionUpdate: could not resolve a plan from product or metadata',
+            metadata
+          );
           return;
         }
+
+        // `subscription.update` fires for any change to the subscription
+        // (plan swaps via checkout/portal/direct API, seat changes, etc.),
+        // not specifically a billing-period renewal — resetting the usage
+        // window here would let a customer reset their resource-creation
+        // quota on demand just by toggling plans. Only a genuine renewal
+        // (onSubscriptionPaid, below) or a brand-new subscription
+        // (onSubscriptionActive, above) should do that.
+        const updated = await applyPlanToOrganization({
+          organizationId,
+          planName,
+          creemCustomerId,
+          resetUsageWindow: false
+        });
+        if (updated) {
+          console.log(
+            `onSubscriptionUpdate: updated organization ${organizationId} to plan "${planName}"`
+          );
+        }
       },
-      onSubscriptionPaid: async ({ metadata }) => {
+      onSubscriptionPaid: async ({ customer, product, metadata }) => {
+        console.log('onSubscriptionPaid =>', metadata);
         const organizationId =
           (metadata?.organizationId as string | undefined) ??
           (metadata?.referenceId as string | undefined);
-        if (!organizationId) return;
-
-        const result = await prisma.organization.updateMany({
-          where: { id: organizationId },
-          data: {
-            systemTokenUsage: 0,
-            imageTokenUsage: 0,
-            lastResetDate: new Date(),
-            nextResetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-          }
-        });
-
-        if (result.count === 0) {
+        if (!organizationId) {
+          console.error(
+            'onSubscriptionPaid: missing organizationId in metadata',
+            metadata
+          );
           return;
         }
+
+        const creemCustomerId =
+          typeof customer === 'object' && customer && 'id' in customer
+            ? (customer as { id: string }).id
+            : undefined;
+
+        const planName = await resolvePlanNameFromEvent({
+          product,
+          metadataPlanName: metadata?.planName as string | undefined
+        });
+
+        if (!planName) {
+          // No resolvable plan (e.g. a one-time/non-plan payment) — still
+          // record the renewed billing window and customer id.
+          const result = await prisma.organization.updateMany({
+            where: { id: organizationId },
+            data: {
+              subscriptionCanceledAt: null,
+              subscriptionEndsAt: null,
+              ...(creemCustomerId ? { creemId: creemCustomerId } : {})
+            }
+          });
+          if (result.count === 0) {
+            console.error(
+              `onSubscriptionPaid: no organization matched id "${organizationId}"`
+            );
+          }
+          return;
+        }
+
+        const updated = await applyPlanToOrganization({
+          organizationId,
+          planName,
+          creemCustomerId
+        });
+        if (updated) {
+          console.log(
+            `onSubscriptionPaid: updated organization ${organizationId} to plan "${planName}"`
+          );
+        }
       },
-      onSubscriptionCanceled: async ({ metadata, status }) => {
+      onSubscriptionCanceled: async ({
+        metadata,
+        status,
+        current_period_end_date
+      }) => {
+        // The subscription remains active (paid plan + limits stay in effect)
+        // until the current billing period actually ends. Creem sends
+        // "subscription.expired" at that point, which is what performs the
+        // downgrade to Free — see onSubscriptionExpired below. This handler
+        // just records that a cancellation is pending, so the UI can hide
+        // the cancel action and show when access will end.
+        console.log('onSubscriptionCanceled =>', metadata, status);
         const organizationId =
           (metadata?.organizationId as string | undefined) ??
           (metadata?.referenceId as string | undefined);
-        if (!organizationId) return;
+        if (!organizationId) {
+          console.error(
+            'onSubscriptionCanceled: missing organizationId in metadata',
+            metadata
+          );
+          return;
+        }
 
         const result = await prisma.organization.updateMany({
           where: { id: organizationId },
           data: {
-            plan: 'Free',
-            systemTokenLimit: FREE_PLAN_DEFAULTS.systemTokenLimit,
-            systemTokenUsage: 0,
-            imageTokenLimit: FREE_PLAN_DEFAULTS.imageTokenLimit,
-            imageTokenUsage: 0,
-            usersLimit: FREE_PLAN_DEFAULTS.usersLimit
+            subscriptionCanceledAt: new Date(),
+            subscriptionEndsAt: current_period_end_date
+              ? new Date(current_period_end_date)
+              : null
           }
         });
 
         if (result.count === 0) {
-          return;
+          console.error(
+            `onSubscriptionCanceled: no organization matched id "${organizationId}"`
+          );
         }
       },
       onSubscriptionExpired: async ({ metadata, status }) => {
+        console.log('onSubscriptionExpired =>', metadata, status);
         const organizationId =
           (metadata?.organizationId as string | undefined) ??
           (metadata?.referenceId as string | undefined);
         if (!organizationId) return;
 
+        const now = new Date();
+        const nextReset = new Date(now);
+        nextReset.setMonth(nextReset.getMonth() + 1);
+
         const result = await prisma.organization.updateMany({
           where: { id: organizationId },
           data: {
             plan: 'Free',
-            systemTokenLimit: FREE_PLAN_DEFAULTS.systemTokenLimit,
-            systemTokenUsage: 0,
-            imageTokenLimit: FREE_PLAN_DEFAULTS.imageTokenLimit,
-            imageTokenUsage: 0,
-            usersLimit: FREE_PLAN_DEFAULTS.usersLimit
+            lastResetDate: now,
+            nextResetDate: nextReset,
+            subscriptionCanceledAt: null,
+            subscriptionEndsAt: null,
+            usersLimit: FREE_PLAN_DEFAULTS.usersLimit,
+            mcpIdentitiesLimit: FREE_PLAN_DEFAULTS.mcpIdentitiesLimit,
+            mcpApiKeysLimit: FREE_PLAN_DEFAULTS.mcpApiKeysLimit,
+            projectsLimit: FREE_PLAN_DEFAULTS.projectsLimit,
+            contextsLimit: FREE_PLAN_DEFAULTS.contextsLimit,
+            instructionsLimit: FREE_PLAN_DEFAULTS.instructionsLimit,
+            skillsLimit: FREE_PLAN_DEFAULTS.skillsLimit,
+            promptTemplatesLimit: FREE_PLAN_DEFAULTS.promptTemplatesLimit,
+            checklistsLimit: FREE_PLAN_DEFAULTS.checklistsLimit,
+            agentProfilesLimit: FREE_PLAN_DEFAULTS.agentProfilesLimit,
+            mcpRequestsLimit: FREE_PLAN_DEFAULTS.mcpRequestsLimit
           }
         });
 
@@ -545,15 +635,27 @@ export const auth = betterAuth({
           (metadata?.referenceId as string | undefined);
         if (!organizationId) return;
 
+        const now = new Date();
+        const nextReset = new Date(now);
+        nextReset.setMonth(nextReset.getMonth() + 1);
+
         const result = await prisma.organization.updateMany({
           where: { id: organizationId },
           data: {
             plan: 'Free',
-            systemTokenLimit: FREE_PLAN_DEFAULTS.systemTokenLimit,
-            systemTokenUsage: 0,
-            imageTokenLimit: FREE_PLAN_DEFAULTS.imageTokenLimit,
-            imageTokenUsage: 0,
-            usersLimit: FREE_PLAN_DEFAULTS.usersLimit
+            lastResetDate: now,
+            nextResetDate: nextReset,
+            usersLimit: FREE_PLAN_DEFAULTS.usersLimit,
+            mcpIdentitiesLimit: FREE_PLAN_DEFAULTS.mcpIdentitiesLimit,
+            mcpApiKeysLimit: FREE_PLAN_DEFAULTS.mcpApiKeysLimit,
+            projectsLimit: FREE_PLAN_DEFAULTS.projectsLimit,
+            contextsLimit: FREE_PLAN_DEFAULTS.contextsLimit,
+            instructionsLimit: FREE_PLAN_DEFAULTS.instructionsLimit,
+            skillsLimit: FREE_PLAN_DEFAULTS.skillsLimit,
+            promptTemplatesLimit: FREE_PLAN_DEFAULTS.promptTemplatesLimit,
+            checklistsLimit: FREE_PLAN_DEFAULTS.checklistsLimit,
+            agentProfilesLimit: FREE_PLAN_DEFAULTS.agentProfilesLimit,
+            mcpRequestsLimit: FREE_PLAN_DEFAULTS.mcpRequestsLimit
           }
         });
 

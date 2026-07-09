@@ -139,6 +139,11 @@ function CreateApiKeyModalHelper({
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+            <p className='text-muted-foreground text-xs'>
+              This key will automatically lock to the first IP address it's used
+              from. If that device's IP changes later, you can reset the binding
+              from the key's details.
+            </p>
           </div>
           <div className='flex justify-end gap-2 border-t border-neutral-200 px-4 py-4 sm:px-6 dark:border-neutral-600'>
             <Button variant='outline' onClick={handleClose}>

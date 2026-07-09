@@ -38,7 +38,7 @@ model User {
 
   creemCustomerId String?
   hadTrial        Boolean? @default(false)
-  workspacesCount Int?     @default(1)
+  workspacesCount Int?     @default(0)
   workspacesLimit Int?     @default(2)
 
   projectMembers ProjectMember[]
@@ -163,22 +163,25 @@ model Organization {
   plan      String?  @default("Free")
 
   creemId               String?
-  systemTokenLimit      Int?         @default(100)
-  systemTokenUsage      Int?         @default(0)
-  imageTokenLimit       Int?         @default(0)
-  imageTokenUsage       Int?         @default(0)
   usersCount            Int?         @default(1)
   usersLimit            Int?         @default(0)
-  additionalSystemToken Int?         @default(0)
-  additionalImageToken  Int?         @default(0)
+  mcpIdentitiesLimit    Int?         @default(1)
+  mcpApiKeysLimit       Int?         @default(3)
+  projectsLimit         Int?         @default(2)
+  contextsLimit         Int?         @default(10)
+  instructionsLimit     Int?         @default(10)
+  skillsLimit           Int?         @default(10)
+  promptTemplatesLimit  Int?         @default(10)
+  checklistsLimit       Int?         @default(10)
+  agentProfilesLimit    Int?         @default(10)
+  mcpRequestsLimit      Int?         @default(5000)
   lastResetDate         DateTime?    @default(now())
   nextResetDate         DateTime?
+  subscriptionCanceledAt DateTime?
+  subscriptionEndsAt     DateTime?
   updatedAt             DateTime     @updatedAt
   members               Member[]
   invitations           Invitation[]
-
-  additionalSystemTokenUsage Int? @default(0)
-  additionalImageTokenUsage  Int? @default(0)
 
   projects Project[]
   mcpIdentities McpIdentity[]
@@ -240,18 +243,6 @@ model Subscription {
   @@map("subscription")
 }
 
-model TokenUsageLog {
-  id           String   @id @default(cuid())
-  workspaceId  String
-  date         DateTime
-  systemTokens Int      @default(0)
-  imageTokens  Int      @default(0)
-
-  @@unique([workspaceId, date])
-  @@index([workspaceId, date])
-  @@map("token_usage_logs")
-}
-
 // workspace model
 
 model Audit {
@@ -288,19 +279,6 @@ model Creem_subscription {
   cancelAtPeriodEnd   Boolean?  @default(false)
 
   @@map("creem_subscription")
-}
-
-model TopUpPurchase {
-  id          String   @id @default(cuid())
-  workspaceId String
-  amount      Int // dollars paid (e.g. 5, 10, 20, 50, 100)
-  tokens      Int // tokens received
-  tokenType   String // "system" | "image"
-  status      String   @default("completed")
-  createdAt   DateTime @default(now())
-
-  @@index([workspaceId, createdAt])
-  @@map("top_up_purchases")
 }
 
 model Project {
@@ -658,6 +636,7 @@ model ProjectApiKey {
   createdAt     DateTime    @default(now())
   lastUsedAt    DateTime?
   revokedAt     DateTime?
+  allowedIp     String? // auto-captured from the first MCP request; later requests must match
 
   @@index([projectId])
   @@index([mcpIdentityId])
@@ -697,15 +676,17 @@ model McpIdentityResourceGrant {
 }
 
 model McpRequestLog {
-  id            String    @id @default(cuid())
-  projectId     String
-  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  mcpIdentityId String
-  apiKeyId      String
-  receivedAt    DateTime  @default(now())
-  respondedAt   DateTime? // set only if the server successfully sent a response back
+  id             String    @id @default(cuid())
+  projectId      String
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organizationId String
+  mcpIdentityId  String
+  apiKeyId       String
+  receivedAt     DateTime  @default(now())
+  respondedAt    DateTime? // set only if the server successfully sent a response back
 
   @@index([projectId, receivedAt])
+  @@index([organizationId, receivedAt])
   @@map("mcp_request_log")
 }
 

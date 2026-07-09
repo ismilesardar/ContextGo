@@ -44,7 +44,6 @@ function InvoiceRow({
   onDownload: () => void;
 }) {
   const isSubscription = invoice.type === 'subscription';
-  const isOrder = invoice.type === 'order';
   const statusClass = STATUS_BADGES[invoice.status] ?? STATUS_BADGES.completed;
 
   const date = invoice.createdAt
@@ -76,9 +75,7 @@ function InvoiceRow({
             <span className='text-sm font-medium'>
               {isSubscription
                 ? `${PLAN_LABELS[invoice.productId] ?? 'Subscription'}${amount ? ` — ${amount}` : ''}`
-                : isOrder
-                  ? `Order — ${amount}`
-                  : `Top-up — $${invoice.amount}`}
+                : `Order — ${amount}`}
             </span>
             <span
               className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusClass}`}
@@ -97,13 +94,8 @@ function InvoiceRow({
                   ? format(new Date(invoice.periodEnd), 'MMM d, yyyy')
                   : '—'}
               </>
-            ) : isOrder ? (
-              'One-time purchase'
             ) : (
-              <>
-                {invoice.tokenType === 'system' ? 'System' : 'Image'} ·{' '}
-                {invoice.tokens.toLocaleString()} tokens
-              </>
+              'One-time purchase'
             )}
           </div>
         </div>
@@ -136,7 +128,6 @@ export const InvoicesView = () => {
     (inv) => inv.type === 'subscription'
   );
   const orderInvoices = invoices.filter((inv) => inv.type === 'order');
-  const topUpInvoices = invoices.filter((inv) => inv.type === 'topup');
 
   const handlePortal = async () => {
     const customerId = activeWorkspace?.creemId;
@@ -149,7 +140,7 @@ export const InvoicesView = () => {
       return;
     }
     if (data?.url) {
-      window.location.href = data.url;
+      window.open(data.url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -229,30 +220,12 @@ export const InvoicesView = () => {
 
         {/* Orders (Creem one-time purchases) */}
         {!isLoading && orderInvoices.length > 0 && (
-          <div className='mt-8'>
+          <div className='mt-8 pb-6'>
             <h3 className='mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300'>
               Orders
             </h3>
             <div className='space-y-2'>
               {orderInvoices.map((inv) => (
-                <InvoiceRow
-                  key={inv.id}
-                  invoice={inv}
-                  onDownload={handlePortal}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Token Top-ups */}
-        {!isLoading && topUpInvoices.length > 0 && (
-          <div className='mt-8 pb-6'>
-            <h3 className='mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300'>
-              Token Top-Ups
-            </h3>
-            <div className='space-y-2'>
-              {topUpInvoices.map((inv) => (
                 <InvoiceRow
                   key={inv.id}
                   invoice={inv}

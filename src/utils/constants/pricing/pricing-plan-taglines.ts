@@ -17,8 +17,16 @@ export const PRICING_PLAN_TAGLINES = {
 
 export const FREE_PLAN_DEFAULTS = {
   currentPlan: 'Free',
-  systemTokenLimit: 100,
-  imageTokenLimit: 40,
   usersLimit: 0,
-  workspacesLimit: 2
+  workspacesLimit: 2,
+  mcpIdentitiesLimit: 1,
+  mcpApiKeysLimit: 3,
+  projectsLimit: 2,
+  contextsLimit: 10,
+  instructionsLimit: 10,
+  skillsLimit: 10,
+  promptTemplatesLimit: 10,
+  checklistsLimit: 10,
+  agentProfilesLimit: 10,
+  mcpRequestsLimit: 5000
 };

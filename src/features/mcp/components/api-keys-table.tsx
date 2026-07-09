@@ -12,7 +12,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/icons';
 import { useRevokeApiKeyModal } from './revoke-api-key-modal';
-import type { ProjectApiKey } from '../utils/use-project-api-keys';
+import {
+  useResetProjectApiKeyIp,
+  type ProjectApiKey
+} from '../utils/use-project-api-keys';
 
 function RevokeButton({
   apiKey,
@@ -39,6 +42,29 @@ function RevokeButton({
         <Icons.trash className='size-4' />
       </Button>
     </>
+  );
+}
+
+function ResetIpButton({
+  apiKey,
+  projectId
+}: {
+  apiKey: ProjectApiKey;
+  projectId: string;
+}) {
+  const resetIp = useResetProjectApiKeyIp(projectId);
+
+  return (
+    <Button
+      variant='ghost'
+      size='icon'
+      className='size-8'
+      disabled={resetIp.isPending}
+      onClick={() => resetIp.mutate(apiKey.id)}
+      title='Reset IP binding'
+    >
+      <Icons.refresh className='size-4' />
+    </Button>
   );
 }
 
@@ -69,8 +95,9 @@ export function ApiKeysTable({
             <TableHead>Key</TableHead>
             <TableHead>Created</TableHead>
             <TableHead>Last used</TableHead>
+            <TableHead>IP binding</TableHead>
             <TableHead>Status</TableHead>
-            {canManage && <TableHead className='w-12' />}
+            {canManage && <TableHead className='w-20' />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -86,6 +113,9 @@ export function ApiKeysTable({
               <TableCell className='text-muted-foreground'>
                 {formatDate(apiKey.lastUsedAt)}
               </TableCell>
+              <TableCell className='text-muted-foreground font-mono text-xs'>
+                {apiKey.allowedIp ?? 'Not yet used'}
+              </TableCell>
               <TableCell>
                 {apiKey.revokedAt ? (
                   <Badge variant='secondary'>Revoked</Badge>
@@ -96,7 +126,12 @@ export function ApiKeysTable({
               {canManage && (
                 <TableCell>
                   {!apiKey.revokedAt && (
-                    <RevokeButton apiKey={apiKey} projectId={projectId} />
+                    <div className='flex items-center gap-1'>
+                      {apiKey.allowedIp && (
+                        <ResetIpButton apiKey={apiKey} projectId={projectId} />
+                      )}
+                      <RevokeButton apiKey={apiKey} projectId={projectId} />
+                    </div>
                   )}
                 </TableCell>
               )}

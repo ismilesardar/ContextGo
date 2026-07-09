@@ -13,7 +13,6 @@ import { motion } from 'motion/react';
 import { BillingOptionsTable } from './billing-options-table';
 import { cn } from '@/lib/utils';
 import {
-  getSuggestedPlan,
   isDowngradePlan,
   PlanDetails,
   PLANS
@@ -41,6 +40,7 @@ import { clientAccessCheck } from '@/lib/client-access-check';
 import { authClient } from '@/lib/auth/auth-client';
 import { usePlansStore } from '@/store/workspace-store/plan-store';
 import { EnterpriseContactModal } from './enterprise-contact-modal';
+import { ChangePlanConfirmationModal } from './change-plan-confirmation-modal';
 
 const COMPARE_FEATURE_ICONS: Record<
   (typeof PRICING_PLAN_COMPARE_FEATURES)[number]['category'],
@@ -51,7 +51,7 @@ const COMPARE_FEATURE_ICONS: Record<
   'Listing Content': FileText,
   'Advertising & Growth': TrendingUp,
   'Image Tools': Image,
-  'AI Features': Sparkles,
+  'Resources & Limits': Sparkles,
   'Team & Workspace': Users2,
   'API & Integrations': Plug2,
   Support: MessageCircleQuestion
@@ -70,6 +70,9 @@ export const UpgradeView = () => {
 
   const [billingMonth, setBillingMonth] = useState<boolean>(true);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [changePlanTarget, setChangePlanTarget] = useState<PlanDetails | null>(
+    null
+  );
 
   const [mobilePlanIndex, setMobilePlanIndex] = useState(0);
   const [period, setPeriod] = useState<'monthly' | 'yearly'>('monthly');
@@ -115,25 +118,6 @@ export const UpgradeView = () => {
         planPeriod: period
       }
     });
-  };
-
-  const handlePortal = async () => {
-    const customerId = activeWorkspace?.creemId;
-    if (!customerId) {
-      console.error('Missing Creem customer ID for billing portal');
-      return;
-    }
-
-    const { data, error } = await authClient.creem.createPortal({
-      customerId
-    });
-    if (error) {
-      console.error('Failed to open customer portal', error);
-      return;
-    }
-    if (data?.url) {
-      window.location.href = data.url;
-    }
   };
 
   return (
@@ -239,6 +223,24 @@ export const UpgradeView = () => {
                         })
                     );
 
+                    // an existing paid (non-Free) subscription can be changed
+                    // in place; a first-time subscribe still needs checkout
+                    // to collect a payment method
+                    const hasActiveSubscription = Boolean(
+                      activeWorkspace?.creemId &&
+                        activeWorkspace?.plan &&
+                        activeWorkspace.plan.toLowerCase() !== 'free'
+                    );
+
+                    const buttonLabel =
+                      activeWorkspace?.plan?.toLowerCase() === 'enterprise'
+                        ? 'Contact support'
+                        : disableCurrentPlan
+                          ? 'Current plan'
+                          : isDowngrade
+                            ? 'Downgrade'
+                            : 'Upgrade';
+
                     return (
                       <div
                         key={plan.name}
@@ -308,6 +310,27 @@ export const UpgradeView = () => {
                             >
                               Contact us
                             </button>
+                          ) : hasActiveSubscription ? (
+                            <DynamicTooltipWrapper
+                              tooltipProps={
+                                permissionsError && !disableCurrentPlan
+                                  ? { content: permissionsError }
+                                  : undefined
+                              }
+                            >
+                              <Button
+                                type='button'
+                                variant='default'
+                                size='lg'
+                                disabled={
+                                  !!permissionsError || disableCurrentPlan
+                                }
+                                onClick={() => setChangePlanTarget(plan)}
+                                className='h-8 w-full border bg-neutral-950 shadow-sm hover:bg-neutral-50 hover:text-neutral-900 dark:border-neutral-200 dark:bg-white dark:text-neutral-900'
+                              >
+                                {buttonLabel}
+                              </Button>
+                            </DynamicTooltipWrapper>
                           ) : (
                             <DynamicTooltipWrapper
                               tooltipProps={
@@ -317,27 +340,16 @@ export const UpgradeView = () => {
                               }
                             >
                               <BetterAuthActionButton
-                                action={() =>
-                                  isDowngrade
-                                    ? handlePortal()
-                                    : handelSubscriptions(plan)
-                                }
+                                action={() => handelSubscriptions(plan)}
                                 variant='default'
                                 size='lg'
                                 showChildren={false}
-                                disabled
-                                // disabled={
-                                //   !!permissionsError || disableCurrentPlan
-                                // }
+                                disabled={
+                                  !!permissionsError || disableCurrentPlan
+                                }
                                 className='h-8 w-full border bg-neutral-950 shadow-sm hover:bg-neutral-50 hover:text-neutral-900 dark:border-neutral-200 dark:bg-white dark:text-neutral-900'
                               >
-                                {activeWorkspace?.plan === 'enterprise'
-                                  ? 'Contact support'
-                                  : disableCurrentPlan
-                                    ? 'Current plan'
-                                    : isDowngrade
-                                      ? 'Downgrade'
-                                      : 'Upgrade'}
+                                {buttonLabel}
                               </BetterAuthActionButton>
                             </DynamicTooltipWrapper>
                             // <UpgradePlanButton
@@ -409,6 +421,17 @@ export const UpgradeView = () => {
         open={contactModalOpen}
         onOpenChange={setContactModalOpen}
       />
+
+      {changePlanTarget && (
+        <ChangePlanConfirmationModal
+          open={!!changePlanTarget}
+          onOpenChange={(open) => {
+            if (!open) setChangePlanTarget(null);
+          }}
+          plan={changePlanTarget}
+          period={period}
+        />
+      )}
     </Card>
   );
 };

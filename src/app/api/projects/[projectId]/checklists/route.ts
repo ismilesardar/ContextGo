@@ -14,6 +14,7 @@ import {
 import { checklistSchema } from '@/lib/zod-schema/checklist-schema';
 import { createSlug } from '@/utils/create-slug';
 import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
+import { requireUnderLimit } from '@/lib/api/plan/require-under-limit';
 
 async function loadProject(projectId: string, workspaceId: string) {
   return prisma.project.findFirst({
@@ -113,6 +114,23 @@ const createHandler: ApiHandler = async (
       { status: 400 }
     );
   }
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: workspaceId },
+    select: { checklistsLimit: true, lastResetDate: true }
+  });
+  const existingCount = await prisma.checklist.count({
+    where: {
+      projectId,
+      createdAt: { gte: organization?.lastResetDate ?? new Date(0) }
+    }
+  });
+  const limitCheck = requireUnderLimit({
+    currentCount: existingCount,
+    limit: organization?.checklistsLimit ?? 10,
+    resourceLabel: 'checklists in this project'
+  });
+  if (!limitCheck.allowed) return limitCheck.response;
 
   const baseSlug = createSlug(validation.data.title) || 'checklist';
   const slug = await uniqueChecklistSlug(projectId, baseSlug);

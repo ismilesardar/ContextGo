@@ -1,5 +1,4 @@
 import { INFINITY_NUMBER } from '@/utils/functions/misc';
-import { nFormatter } from '@/utils/functions/nformatter';
 
 export type PlanFeature = {
   id?: string;
@@ -19,10 +18,18 @@ export type PlanDetails = {
     ids?: string[];
   };
   limits: {
-    systemToken: number;
-    imageToken: number;
     users: number;
     workspaces: number;
+    mcpIdentities: number;
+    mcpApiKeys: number;
+    projects: number;
+    contexts: number;
+    instructions: number;
+    skills: number;
+    promptTemplates: number;
+    checklists: number;
+    agentProfiles: number;
+    mcpRequests: number;
     // tags: number;
     // folders: number;
     // groups: number;
@@ -40,10 +47,7 @@ export type PlanDetails = {
         yearly: number | null;
         ids: string[];
       };
-      limits: {
-        systemToken: number;
-        imageToken: number;
-      };
+      limits: Partial<PlanDetails['limits']>;
     };
   };
   featureTitle?: string;
@@ -138,10 +142,18 @@ export const PLANS: PlanDetails[] = [
       yearly: 0
     },
     limits: {
-      systemToken: 100,
-      imageToken: 40,
       users: 0,
-      workspaces: 2
+      workspaces: 2,
+      mcpIdentities: 1,
+      mcpApiKeys: 3,
+      projects: 2,
+      contexts: 10,
+      instructions: 10,
+      skills: 10,
+      promptTemplates: 10,
+      checklists: 10,
+      agentProfiles: 10,
+      mcpRequests: 5_000
     }
   },
   {
@@ -152,10 +164,18 @@ export const PLANS: PlanDetails[] = [
       ids: [...PRO_PRICE_IDS]
     },
     limits: {
-      systemToken: 5_000,
-      imageToken: 500,
       users: 5,
-      workspaces: 6
+      workspaces: 6,
+      mcpIdentities: 30,
+      mcpApiKeys: 10,
+      projects: 5,
+      contexts: 50,
+      instructions: 50,
+      skills: 50,
+      promptTemplates: 50,
+      checklists: 50,
+      agentProfiles: 50,
+      mcpRequests: 100_000
     },
     // tiers: {
     //   2: {
@@ -232,10 +252,18 @@ export const PLANS: PlanDetails[] = [
       ids: [...BUSINESS_PRICE_IDS]
     },
     limits: {
-      systemToken: 15_000,
-      imageToken: 1_300,
       users: 9,
-      workspaces: 11
+      workspaces: 11,
+      mcpIdentities: 80,
+      mcpApiKeys: 15,
+      projects: 10,
+      contexts: 150,
+      instructions: 150,
+      skills: 150,
+      promptTemplates: 150,
+      checklists: 150,
+      agentProfiles: 150,
+      mcpRequests: 300_000
     },
     // tiers: {
     //   2: {
@@ -331,10 +359,18 @@ export const PLANS: PlanDetails[] = [
       ids: ADVANCED_PRICE_IDS
     },
     limits: {
-      systemToken: 25_000,
-      imageToken: 1_900,
       users: 15,
-      workspaces: 19
+      workspaces: 19,
+      mcpIdentities: 200,
+      mcpApiKeys: 25,
+      projects: 20,
+      contexts: 500,
+      instructions: 500,
+      skills: 500,
+      promptTemplates: 500,
+      checklists: 500,
+      agentProfiles: 500,
+      mcpRequests: 500_000
     },
     // tiers: {
     //   2: {
@@ -439,10 +475,18 @@ export const PLANS: PlanDetails[] = [
       yearly: null
     },
     limits: {
-      systemToken: INFINITY_NUMBER,
-      imageToken: INFINITY_NUMBER,
       users: 30,
-      workspaces: 50
+      workspaces: 50,
+      mcpIdentities: INFINITY_NUMBER,
+      mcpApiKeys: INFINITY_NUMBER,
+      projects: INFINITY_NUMBER,
+      contexts: INFINITY_NUMBER,
+      instructions: INFINITY_NUMBER,
+      skills: INFINITY_NUMBER,
+      promptTemplates: INFINITY_NUMBER,
+      checklists: INFINITY_NUMBER,
+      agentProfiles: INFINITY_NUMBER,
+      mcpRequests: INFINITY_NUMBER
       // links: 500_000,
       // clicks: 5_000_000,
       // payouts: INFINITY_NUMBER,
@@ -491,16 +535,7 @@ const enrichPlanWithTierData = (
     price: {
       ...planDetails.price,
       ...tierData?.price
-    },
-    features: planDetails.features?.map((feature) => ({
-      ...feature,
-      text:
-        feature.id === 'systemToken'
-          ? `${nFormatter(tierLimits.systemToken)} system tokens/mo`
-          : feature.id === 'imageToken'
-            ? `${nFormatter(tierLimits.imageToken)} image tokens/mo`
-            : feature.text
-    }))
+    }
   };
 };
 
@@ -573,46 +608,6 @@ export const isDowngradePlan = ({
     currentPlanIndex > newPlanIndex ||
     (currentPlanIndex === newPlanIndex && (currentTier ?? 1) > (newTier ?? 1))
   );
-};
-
-export const getSuggestedPlan = ({
-  events,
-  links,
-  suggestFree = false
-}: {
-  events?: number;
-  links?: number;
-  suggestFree?: boolean;
-}): { plan: PlanDetails; planTier: number } => {
-  let match: { plan: PlanDetails; planTier: number } | null = null;
-
-  for (const p of PLANS) {
-    if (!suggestFree && p.price.monthly === 0) continue;
-
-    const matchingTier = [
-      1,
-      ...Object.keys(p.tiers ?? {})
-        .map(Number)
-        .filter((tier) => tier >= 2)
-    ].find((tier) => {
-      const limits =
-        tier === 1 ? p.limits : (p.tiers?.[tier]?.limits ?? p.limits);
-      return (
-        limits.systemToken >= (events ?? 0) && limits.imageToken >= (links ?? 0)
-      );
-    });
-
-    if (matchingTier !== undefined) {
-      match = {
-        plan: enrichPlanWithTierData(p, matchingTier),
-        planTier: matchingTier
-      };
-
-      break;
-    }
-  }
-
-  return match ?? { plan: ENTERPRISE_PLAN, planTier: 1 };
 };
 
 export const isLegacyBusinessPlan = ({

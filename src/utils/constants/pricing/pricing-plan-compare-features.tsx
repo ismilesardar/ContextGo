@@ -23,7 +23,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
   }[];
 }[] = [
   {
-    category: 'AI Features',
+    category: 'Resources & Limits',
     href: '',
     features: [
       {
@@ -32,14 +32,119 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
             <strong>
               {plan.name === 'Enterprise'
                 ? 'Unlimited'
-                : nFormatter(plan.limits.systemToken)}
+                : nFormatter(plan.limits.projects)}
             </strong>{' '}
-            AI credits / month
+            new projects / month
           </>
         )
       },
       {
-        text: 'Shared AI credit pool across all tools'
+        text: ({ plan }) => (
+          <>
+            <strong>
+              {plan.name === 'Enterprise'
+                ? 'Unlimited'
+                : nFormatter(plan.limits.mcpRequests)}
+            </strong>{' '}
+            MCP requests / month
+          </>
+        )
+      },
+      {
+        text: ({ plan }) => (
+          <>
+            <strong>
+              {plan.name === 'Enterprise'
+                ? 'Unlimited'
+                : nFormatter(plan.limits.mcpIdentities)}
+            </strong>{' '}
+            new MCP users / month
+          </>
+        )
+      },
+      {
+        text: ({ plan }) => (
+          <>
+            <strong>
+              {plan.name === 'Enterprise'
+                ? 'Unlimited'
+                : nFormatter(plan.limits.contexts)}
+            </strong>{' '}
+            new contexts / month
+          </>
+        )
+      },
+      {
+        text: ({ plan }) => (
+          <>
+            <strong>
+              {plan.name === 'Enterprise'
+                ? 'Unlimited'
+                : nFormatter(plan.limits.instructions)}
+            </strong>{' '}
+            new instructions / month
+          </>
+        )
+      },
+      {
+        text: ({ plan }) => (
+          <>
+            <strong>
+              {plan.name === 'Enterprise'
+                ? 'Unlimited'
+                : nFormatter(plan.limits.skills)}
+            </strong>{' '}
+            new skills / month
+          </>
+        )
+      },
+      {
+        text: ({ plan }) => (
+          <>
+            <strong>
+              {plan.name === 'Enterprise'
+                ? 'Unlimited'
+                : nFormatter(plan.limits.promptTemplates)}
+            </strong>{' '}
+            new prompt templates / month
+          </>
+        )
+      },
+      {
+        text: ({ plan }) => (
+          <>
+            <strong>
+              {plan.name === 'Enterprise'
+                ? 'Unlimited'
+                : nFormatter(plan.limits.checklists)}
+            </strong>{' '}
+            new checklists / month
+          </>
+        )
+      },
+      {
+        text: ({ plan }) => (
+          <>
+            <strong>
+              {plan.name === 'Enterprise'
+                ? 'Unlimited'
+                : nFormatter(plan.limits.agentProfiles)}
+            </strong>{' '}
+            new agent profiles / month
+          </>
+        )
+      },
+      {
+        text: ({ plan }) => (
+          <>
+            <strong>
+              {plan.name === 'Enterprise'
+                ? 'Unlimited'
+                : nFormatter(plan.limits.mcpApiKeys)}
+            </strong>{' '}
+            MCP user per / project
+          </>
+        )
       }
     ]
   },
@@ -61,7 +166,7 @@ export const PRICING_PLAN_COMPARE_FEATURES: {
       },
       {
         check: {
-          default: false,
+          default: true,
           business: true,
           advanced: true,
           enterprise: true

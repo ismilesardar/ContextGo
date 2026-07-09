@@ -34,7 +34,7 @@ const COMPARE_FEATURE_ICONS: Record<
   'Listing Content': FileText,
   'Advertising & Growth': TrendingUp,
   'Image Tools': Image,
-  'AI Features': Sparkles,
+  'Resources & Limits': Sparkles,
   'Team & Workspace': Users2,
   'API & Integrations': Plug2,
   Support: MessageCircleQuestion
@@ -43,7 +43,7 @@ const COMPARE_FEATURE_ICONS: Record<
 const FAQ_ITEMS = [
   {
     q: 'Is there a free plan?',
-    a: `Yes! Our Free plan includes 100 system tokens and 2 workspaces, so you can try ${APP_NAME} before committing to a paid plan.`
+    a: `Yes! Our Free plan includes 2 workspaces and a starter monthly quota for every resource type, so you can try ${APP_NAME} before committing to a paid plan.`
   },
   {
     q: 'Can I switch plans later?',
@@ -51,19 +51,15 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What payment methods do you accept?',
-    a: 'We accept all major credit cards and debit cards. Payments are processed securely through Stripe.'
+    a: 'We accept all major credit cards and debit cards. Payments are processed securely through Creem.'
   },
   {
-    q: 'Is there a free plan available?',
-    a: 'Yes! Our Free plan includes 100 system tokens and 2 workspaces. You can use it indefinitely and upgrade to a paid plan whenever you need more.'
+    q: 'How do monthly limits work on an annual plan?',
+    a: 'Every plan comes with a monthly quota for each resource type (projects, contexts, instructions, and more). Whether you pay monthly or annually, that quota refills every month for as long as your subscription stays active.'
   },
   {
     q: 'Can I cancel my subscription?',
     a: 'You can cancel anytime from your billing settings. Your access continues until the end of the current billing period.'
-  },
-  {
-    q: 'What are AI credits?',
-    a: `AI credits are shared across all ${APP_NAME} tools — SEO, Content, Compliance, Analytics, and more. Each action (analysis, generation, check) consumes a small number of credits based on complexity.`
   }
 ];
 
@@ -80,6 +76,7 @@ export function PricingPage() {
   const tablePlans = PLANS.filter((p) =>
     ['Pro', 'Business', 'Advanced', 'Enterprise'].includes(p.name)
   );
+  const freePlan = PLANS.find((p) => p.name === 'Free');
 
   return (
     <div className='h-screen overflow-y-auto bg-white'>
@@ -216,18 +213,18 @@ export function PricingPage() {
                       {plan.limits && (
                         <div className='text-xs text-neutral-500'>
                           <span className='font-medium text-neutral-700'>
-                            {plan.limits.systemToken === INFINITY_NUMBER
+                            {plan.limits.projects === INFINITY_NUMBER
                               ? 'Unlimited'
-                              : nFormatter(plan.limits.systemToken)}
+                              : nFormatter(plan.limits.projects)}
                           </span>{' '}
-                          AI credits/mo
+                          new projects/mo
                           <br />
                           <span className='font-medium text-neutral-700'>
-                            {plan.limits.imageToken === INFINITY_NUMBER
+                            {plan.limits.contexts === INFINITY_NUMBER
                               ? 'Unlimited'
-                              : nFormatter(plan.limits.imageToken)}
+                              : nFormatter(plan.limits.contexts)}
                           </span>{' '}
-                          image credits/mo
+                          new contexts/mo
                           <br />
                           <span className='font-medium text-neutral-700'>
                             {plan.limits.users === INFINITY_NUMBER
@@ -308,18 +305,18 @@ export function PricingPage() {
                       <div className='mt-4 space-y-2.5 border-t border-neutral-100 pt-4'>
                         <div className='text-xs text-neutral-500'>
                           <span className='font-medium text-neutral-700'>
-                            {plan.limits.systemToken === INFINITY_NUMBER
+                            {plan.limits.projects === INFINITY_NUMBER
                               ? 'Unlimited'
-                              : nFormatter(plan.limits.systemToken)}
+                              : nFormatter(plan.limits.projects)}
                           </span>{' '}
-                          AI credits/mo
+                          new projects/mo
                           <br />
                           <span className='font-medium text-neutral-700'>
-                            {plan.limits.imageToken === INFINITY_NUMBER
+                            {plan.limits.contexts === INFINITY_NUMBER
                               ? 'Unlimited'
-                              : nFormatter(plan.limits.imageToken)}
+                              : nFormatter(plan.limits.contexts)}
                           </span>{' '}
-                          image credits/mo
+                          new contexts/mo
                           <br />
                           <span className='font-medium text-neutral-700'>
                             {plan.limits.users === INFINITY_NUMBER
@@ -439,13 +436,21 @@ export function PricingPage() {
                     </h3>
                   </div>
                   <div className='bg-neutral-50 px-5 py-4 text-xs leading-relaxed text-neutral-500'>
-                    <span className='font-medium text-neutral-700'>100</span> AI
-                    credits/mo &middot;{' '}
-                    <span className='font-medium text-neutral-700'>0</span>{' '}
-                    image credits/mo &middot;{' '}
-                    <span className='font-medium text-neutral-700'>0</span> team
-                    members &middot;{' '}
-                    <span className='font-medium text-neutral-700'>2</span>{' '}
+                    <span className='font-medium text-neutral-700'>
+                      {freePlan?.limits.projects ?? 0}
+                    </span>{' '}
+                    new projects/mo &middot;{' '}
+                    <span className='font-medium text-neutral-700'>
+                      {freePlan?.limits.contexts ?? 0}
+                    </span>{' '}
+                    new contexts/mo &middot;{' '}
+                    <span className='font-medium text-neutral-700'>
+                      {freePlan?.limits.users ?? 0}
+                    </span>{' '}
+                    team members &middot;{' '}
+                    <span className='font-medium text-neutral-700'>
+                      {freePlan?.limits.workspaces ?? 0}
+                    </span>{' '}
                     workspaces &middot;{' '}
                     <span className='font-medium text-neutral-700'>
                       Basic support (email)

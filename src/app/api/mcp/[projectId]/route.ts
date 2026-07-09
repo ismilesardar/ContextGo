@@ -10,6 +10,7 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getIP } from '@/utils/functions/get-ip';
 import {
   verifyApiKey,
   extractKeyPrefix
@@ -17,6 +18,7 @@ import {
 import { resolveApiKeyGrants } from '@/lib/api/project-api-key/resolve-api-key-grants';
 import { buildMcpServer } from '@/lib/api/mcp/build-mcp-server';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
+import { requireUnderLimit } from '@/lib/api/plan/require-under-limit';
 
 type RouteContext = { params: Promise<{ projectId: string }> };
 
@@ -64,24 +66,72 @@ async function authenticate(req: Request, projectId: string) {
     };
   }
 
+  const organization = await prisma.organization.findUnique({
+    where: { id: project.organizationId },
+    select: { mcpRequestsLimit: true, lastResetDate: true }
+  });
+  const periodStart = organization?.lastResetDate ?? new Date(0);
+  const [requestCount, responseCount] = await Promise.all([
+    prisma.mcpRequestLog.count({
+      where: {
+        organizationId: project.organizationId,
+        receivedAt: { gte: periodStart }
+      }
+    }),
+    prisma.mcpRequestLog.count({
+      where: {
+        organizationId: project.organizationId,
+        receivedAt: { gte: periodStart },
+        respondedAt: { not: null }
+      }
+    })
+  ]);
+  const limitCheck = requireUnderLimit({
+    currentCount: requestCount + responseCount,
+    limit: organization?.mcpRequestsLimit ?? 5000,
+    resourceLabel: 'MCP requests this month',
+    status: 429
+  });
+  if (!limitCheck.allowed) {
+    return { error: limitCheck.response };
+  }
+
+  const requestIp = await getIP(req);
+
+  if (!apiKey.allowedIp) {
+    // First use of this key: pin it to whatever IP made this request.
+    await prisma.projectApiKey.update({
+      where: { id: apiKey.id },
+      data: { allowedIp: requestIp }
+    });
+  } else if (apiKey.allowedIp !== requestIp) {
+    return {
+      error: NextResponse.json(
+        { error: 'This API key is restricted to a different IP address' },
+        { status: 403 }
+      )
+    };
+  }
+
   prisma.projectApiKey
     .update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } })
     .catch((error) =>
       console.error('Failed to update MCP key lastUsedAt', error)
     );
 
-  return { apiKey };
+  return { apiKey, organizationId: project.organizationId };
 }
 
 function logMcpRequest(
   projectId: string,
+  organizationId: string,
   apiKeyId: string,
   mcpIdentityId: string,
   respondedAt: Date | null
 ) {
   prisma.mcpRequestLog
     .create({
-      data: { projectId, apiKeyId, mcpIdentityId, respondedAt }
+      data: { projectId, organizationId, apiKeyId, mcpIdentityId, respondedAt }
     })
     .catch((error) => console.error('Failed to log MCP request', error));
 }
@@ -101,13 +151,20 @@ async function handleMcpRequest(req: Request, { params }: RouteContext) {
     const response = await transport.handleRequest(req);
     logMcpRequest(
       projectId,
+      auth.organizationId,
       auth.apiKey.id,
       auth.apiKey.mcpIdentityId,
       new Date()
     );
     return response;
   } catch (error) {
-    logMcpRequest(projectId, auth.apiKey.id, auth.apiKey.mcpIdentityId, null);
+    logMcpRequest(
+      projectId,
+      auth.organizationId,
+      auth.apiKey.id,
+      auth.apiKey.mcpIdentityId,
+      null
+    );
     throw error;
   }
 }

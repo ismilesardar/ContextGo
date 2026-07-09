@@ -31,6 +31,7 @@ export interface ProjectApiKey {
   createdAt: string;
   lastUsedAt: string | null;
   revokedAt: string | null;
+  allowedIp: string | null;
 }
 
 export interface CreateProjectApiKeyInput {
@@ -100,6 +101,34 @@ export function useRevokeProjectApiKey(projectId: string) {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.error ?? 'Failed to revoke API key');
+    }
+  });
+}
+
+export function useResetProjectApiKeyIp(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (keyId: string) => {
+      const data = await axios.post<
+        { apiKey: ProjectApiKey },
+        { apiKey: ProjectApiKey }
+      >(`/api/projects/${projectId}/mcp/keys/${keyId}/reset-ip`);
+      return data.apiKey;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['project-api-keys', projectId]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['project-mcp-identities', projectId]
+      });
+      toast.success(
+        'IP binding reset — the next request from any IP will re-pin it'
+      );
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.error ?? 'Failed to reset IP binding');
     }
   });
 }

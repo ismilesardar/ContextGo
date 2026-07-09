@@ -2,56 +2,26 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { authClient } from '@/lib/auth/auth-client';
-import { STRIPE_PLANS } from '@/lib/plans/stripe';
-import { Subscription } from '@better-auth/stripe';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { useEffect, useMemo } from 'react';
 import NumberFlow from '@number-flow/react';
 import { useParams } from 'next/navigation';
 import { useWorkspaceStore } from '@/store';
 import SubscriptionMenu from '@/components/ui/workspaces/subscription-menu';
-import { PLANS } from '@/utils/constants/pricing/pricing-plans';
 import { usePlansStore } from '@/store/workspace-store/plan-store';
 import { getFirstAndLastDay } from '@/utils/functions/datetime/get-first-and-last-day';
-import { Icons } from '@/components/icons';
-import { useTokenUsage } from '@/hooks/use-token-usage';
-import { TokenUsageCharts } from './token-usage-charts';
-import { TopUpModal } from './top-up/top-up-modal';
-import { DynamicTooltipWrapper } from '@/components/ui/tooltip';
+import { useResourceUsage } from '@/hooks/use-resource-usage';
 
 export const BillingViewPage = () => {
   const params = useParams();
   const { activeWorkspace } = useWorkspaceStore((state) => state);
   const { activePlan, refreshPlans } = usePlansStore((state) => state);
-  // const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
 
   useEffect(() => {
     if (activeWorkspace) {
       refreshPlans(activeWorkspace.id);
     }
-
-    // authClient.subscription
-    //   .list({ query: { referenceId: activeWorkspace.id } })
-    //   .then((result) => {
-    //     if (result.error) {
-    //       setSubscriptions([]);
-    //       toast.error('Failed to load subscriptions');
-    //       return;
-    //     }PlanDetails
-
-    //     setSubscriptions(result.data);
-    //   });
   }, [activeWorkspace]);
-
-  // const activeSubscription = subscriptions.find(
-  //   (sub) => sub.status === 'active' || sub.status === 'trialing'
-  // );
-
-  // const activePlan = PLANS.find(
-  //   (plan) => plan.name === activeSubscription?.plan
-  // );
 
   const [billingStart, billingEnd] = useMemo(() => {
     if (activeWorkspace?.lastResetDate) {
@@ -73,13 +43,8 @@ export const BillingViewPage = () => {
     return [];
   }, [activeWorkspace?.lastResetDate]);
 
-  const [topUpTokenType, setTopUpTokenType] = useState<
-    'system' | 'image' | null
-  >(null);
-
-  const { data: tokenEntries = [], isLoading: tokenLoading } = useTokenUsage(
-    activeWorkspace?.id
-  );
+  const { data: resourceUsage = [], isLoading: usageLoading } =
+    useResourceUsage(activeWorkspace?.id);
 
   const paramsSlug = Array.isArray(params.workspace)
     ? params.workspace[0]
@@ -124,174 +89,61 @@ export const BillingViewPage = () => {
             )}
         </div>
       </div>
+      {activeWorkspace?.subscriptionCanceledAt && (
+        <div className='mx-6 mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 md:mx-8 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-400'>
+          Your subscription has been canceled.{' '}
+          {activeWorkspace?.subscriptionEndsAt
+            ? `You'll keep access to your current plan until ${activeWorkspace.subscriptionEndsAt.toLocaleDateString(
+                'en-us',
+                { month: 'short', day: 'numeric', year: 'numeric' }
+              )}, after which your workspace will move to the Free plan.`
+            : 'Your workspace will move to the Free plan at the end of the current billing period.'}
+        </div>
+      )}
+
       {/* divider */}
       <div className='h-0.5 w-full bg-neutral-200 dark:bg-neutral-600'></div>
 
-      <div className='grid gap-4 p-6 pb-0 sm:grid-cols-2 md:p-8 md:pb-0 lg:gap-6'>
-        <div className='relative'>
-          <div
-            className='w-full rounded-lg border border-neutral-900 bg-white px-4 py-3 text-left ring-1 ring-neutral-900 transition-colors duration-75 outline-none hover:bg-neutral-50 focus-visible:border-blue-600 focus-visible:ring-1 focus-visible:ring-blue-600 lg:px-5 lg:py-4 dark:border-neutral-700 dark:bg-neutral-800'
-            aria-selected='true'
-          >
-            <Icons.clickCourser className='size-5 text-neutral-600' />
-
-            <div className='mt-1.5 flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400'>
-              System Token
-            </div>
-            <div className='mt-1.5'>
-              {/* <number-flow-react className="text-2xl font-medium leading-none text-neutral-900" aria-label="0" role="img"></number-flow-react> */}
-              <NumberFlow
-                value={0}
-                className='text-2xl leading-none font-medium text-neutral-900 dark:text-neutral-400'
-              />
-            </div>
+      <div className='grid gap-4 p-6 pb-6 sm:grid-cols-2 md:p-8 md:pb-8 lg:grid-cols-3 lg:gap-6'>
+        {usageLoading &&
+          Array.from({ length: 6 }).map((_, i) => (
             <div
-              className='overflow-hidden'
-              style={{ width: 'auto', height: '48px' }}
+              key={i}
+              className='h-20 animate-pulse rounded-lg border border-neutral-200 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800'
+            />
+          ))}
+
+        {!usageLoading &&
+          resourceUsage.map((item) => (
+            <div
+              key={item.key}
+              className='w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-left dark:border-neutral-700 dark:bg-neutral-800'
             >
-              <div className='h-max'>
-                <div className='h-12'>
-                  <div className='mt-4'>
-                    <div className='h-1 w-full overflow-hidden rounded-full bg-neutral-900/10 transition-colors'>
-                      <div
-                        className='animate-slide-right-fade size-full'
-                        style={{ ['--offset' as any]: '-100%' }}
-                      >
-                        <div
-                          className='size-full rounded-full bg-neutral-800'
-                          style={{ transform: 'translateX(-100%)' }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className='mt-2 leading-none'>
-                    <span className='text-xs leading-none font-medium text-neutral-600 dark:text-neutral-400'>
-                      {(activeWorkspace?.systemTokenLimit ?? 0) -
-                        (activeWorkspace?.systemTokenUsage ?? 0) +
-                        ((activeWorkspace?.additionalSystemToken ?? 0) -
-                          (activeWorkspace?.additionalSystemTokenUsage ??
-                            0))}{' '}
-                      remaining of{' '}
-                      {(activeWorkspace?.systemTokenLimit ?? 0) +
-                        (activeWorkspace?.additionalSystemToken ?? 0)}
-                    </span>
-                  </div>
+              <div className='text-sm text-neutral-600 dark:text-neutral-400'>
+                {item.label}
+              </div>
+              <div className='mt-1.5'>
+                <NumberFlow
+                  value={item.used}
+                  className='text-2xl leading-none font-medium text-neutral-900 dark:text-neutral-400'
+                />
+              </div>
+              <div className='mt-3'>
+                <div className='h-1 w-full overflow-hidden rounded-full bg-neutral-900/10'>
+                  <div
+                    className='h-full rounded-full bg-neutral-800 transition-all dark:bg-neutral-300'
+                    style={{
+                      width: `${item.limit > 0 ? Math.min(100, (item.used / item.limit) * 100) : 100}%`
+                    }}
+                  />
+                </div>
+                <div className='mt-2 text-xs leading-none font-medium text-neutral-600 dark:text-neutral-400'>
+                  {item.used} of {item.limit} used this period
                 </div>
               </div>
             </div>
-          </div>
-          <div className='absolute top-3 right-3'>
-            <DynamicTooltipWrapper
-              tooltipProps={
-                activeWorkspace &&
-                activeWorkspace?.plan?.toLocaleLowerCase() === 'free'
-                  ? { content: 'Available on paid plans only.' }
-                  : undefined
-              }
-            >
-              <Button
-                type='button'
-                disabled={activeWorkspace?.plan?.toLocaleLowerCase() === 'free'}
-                onClick={() => setTopUpTokenType('system')}
-                className='group border-border-subtle text-content-emphasis hover:bg-bg-muted focus-visible:border-border-emphasis data-[state=open]:border-border-emphasis data-[state=open]:ring-border-subtle flex h-6 w-full cursor-pointer items-center justify-center gap-2 rounded-md border bg-white px-1.5 text-xs whitespace-nowrap transition-all outline-none data-[state=open]:ring-4 dark:bg-black'
-              >
-                <div className='min-w-0 truncate'>Top Up</div>
-                {activeWorkspace?.plan?.toLocaleLowerCase() === 'free' && (
-                  <Icons.crown className='size-3.5' />
-                )}
-              </Button>
-            </DynamicTooltipWrapper>
-          </div>
-        </div>
-
-        <div className='relative'>
-          <div
-            className='w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-left transition-colors duration-75 outline-none hover:bg-neutral-50 focus-visible:border-blue-600 focus-visible:ring-1 focus-visible:ring-blue-600 lg:px-5 lg:py-4 dark:border-neutral-700 dark:bg-neutral-800'
-            aria-selected='false'
-          >
-            <Icons.imageGeneration className='size-4 text-neutral-600' />
-            <div className='mt-1.5 flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300'>
-              Image Token
-            </div>
-            <div className='mt-1.5'>
-              {/* <number-flow-react className="text-2xl font-medium leading-none text-neutral-900" aria-label="0" role="img"></number-flow-react> */}
-              <NumberFlow
-                value={0}
-                className='text-2xl leading-none font-medium text-neutral-900 dark:text-neutral-400'
-              />
-            </div>
-            <div
-              className='overflow-hidden'
-              style={{ width: 'auto', height: '48px' }}
-            >
-              <div className='h-max'>
-                <div className='h-12'>
-                  <div className='mt-4'>
-                    <div className='h-1 w-full overflow-hidden rounded-full bg-neutral-900/10 transition-colors'>
-                      <div
-                        className='animate-slide-right-fade size-full'
-                        style={{ ['--offset' as any]: '-100%' }}
-                      >
-                        <div
-                          className='size-full rounded-full bg-neutral-800'
-                          style={{ transform: 'translateX(-100%)' }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className='mt-2 leading-none'>
-                    <span className='text-xs leading-none font-medium text-neutral-600 dark:text-neutral-400'>
-                      {(activeWorkspace?.imageTokenLimit ?? 0) -
-                        (activeWorkspace?.imageTokenUsage ?? 0) +
-                        ((activeWorkspace?.additionalImageToken ?? 0) -
-                          (activeWorkspace?.additionalImageTokenUsage ??
-                            0))}{' '}
-                      remaining of{' '}
-                      {(activeWorkspace?.imageTokenLimit ?? 0) +
-                        (activeWorkspace?.additionalImageToken ?? 0)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className='absolute top-3 right-3'>
-            <DynamicTooltipWrapper
-              tooltipProps={
-                activeWorkspace &&
-                activeWorkspace?.plan?.toLocaleLowerCase() === 'free'
-                  ? { content: 'Available on paid plans only.' }
-                  : undefined
-              }
-            >
-              <Button
-                type='button'
-                disabled={activeWorkspace?.plan?.toLocaleLowerCase() === 'free'}
-                onClick={() => setTopUpTokenType('image')}
-                className='group border-border-subtle text-content-emphasis hover:bg-bg-muted focus-visible:border-border-emphasis data-[state=open]:border-border-emphasis data-[state=open]:ring-border-subtle flex h-6 w-full cursor-pointer items-center justify-center gap-2 rounded-md border bg-white px-1.5 text-xs whitespace-nowrap transition-all outline-none data-[state=open]:ring-4 dark:bg-black'
-              >
-                <div className='min-w-0 truncate'>Top Up</div>
-                {activeWorkspace?.plan?.toLocaleLowerCase() === 'free' && (
-                  <Icons.crown className='size-3.5' />
-                )}
-              </Button>
-            </DynamicTooltipWrapper>
-          </div>
-        </div>
+          ))}
       </div>
-
-      <div className='mt-6 px-6 pb-6 md:px-8 md:pb-8'>
-        <TokenUsageCharts entries={tokenEntries} isLoading={tokenLoading} />
-      </div>
-
-      <TopUpModal
-        open={topUpTokenType !== null}
-        onOpenChange={(open) => {
-          if (!open) setTopUpTokenType(null);
-        }}
-        tokenType={topUpTokenType ?? 'system'}
-        workspaceId={activeWorkspace?.id ?? ''}
-      />
     </Card>
   );
 };

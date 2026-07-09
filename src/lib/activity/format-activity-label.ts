@@ -12,6 +12,7 @@ const VERB_PHRASES: Record<string, string> = {
   role_changed: 'changed the role of',
   removed: 'removed',
   revoked: 'revoked',
+  ip_reset: 'reset the IP binding for',
   granted: 'granted access to',
   grant_updated: 'updated resource access for',
   removed_from_project: 'removed',

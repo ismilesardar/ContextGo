@@ -15,6 +15,7 @@ import { isOrgAdmin } from '@/lib/permissions/project-access';
 import { AUTHOR_SELECT } from '@/lib/api/author-select';
 import { mcpIdentitySchema } from '@/lib/zod-schema/mcp-identity-schema';
 import { recordAuditLog } from '@/lib/api/audit-logs/record-audit-log';
+import { requireUnderLimit } from '@/lib/api/plan/require-under-limit';
 
 const listHandler: ApiHandler = async (_req, { apiContext }) => {
   const { userId, workspaceId } = apiContext;
@@ -57,6 +58,23 @@ const createHandler: ApiHandler = async (_req, { apiContext, body }) => {
       { status: 400 }
     );
   }
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: workspaceId },
+    select: { mcpIdentitiesLimit: true, lastResetDate: true }
+  });
+  const existingCount = await prisma.mcpIdentity.count({
+    where: {
+      organizationId: workspaceId,
+      createdAt: { gte: organization?.lastResetDate ?? new Date(0) }
+    }
+  });
+  const limitCheck = requireUnderLimit({
+    currentCount: existingCount,
+    limit: organization?.mcpIdentitiesLimit ?? 1,
+    resourceLabel: 'MCP Users'
+  });
+  if (!limitCheck.allowed) return limitCheck.response;
 
   const identity = await prisma.mcpIdentity.create({
     data: {

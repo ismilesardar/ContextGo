@@ -20,6 +20,7 @@ import { AUTHOR_SELECT } from '@/lib/api/author-select';
 import { createProjectApiKeySchema } from '@/lib/zod-schema/project-api-key-schema';
 import { generateApiKey } from '@/lib/api/project-api-key/hash-key';
 import { recordProjectActivity } from '@/lib/api/project-activity/record-project-activity';
+import { requireUnderLimit } from '@/lib/api/plan/require-under-limit';
 
 async function loadProject(projectId: string, workspaceId: string) {
   return prisma.project.findFirst({
@@ -114,6 +115,24 @@ const createHandler: ApiHandler = async (
       { status: 400 }
     );
   }
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: workspaceId },
+    select: { mcpApiKeysLimit: true, lastResetDate: true }
+  });
+  const existingKeyCount = await prisma.projectApiKey.count({
+    where: {
+      projectId,
+      revokedAt: null,
+      createdAt: { gte: organization?.lastResetDate ?? new Date(0) }
+    }
+  });
+  const limitCheck = requireUnderLimit({
+    currentCount: existingKeyCount,
+    limit: organization?.mcpApiKeysLimit ?? 3,
+    resourceLabel: 'API keys for this project'
+  });
+  if (!limitCheck.allowed) return limitCheck.response;
 
   const { raw, prefix, hash } = generateApiKey();
 

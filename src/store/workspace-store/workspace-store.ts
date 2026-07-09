@@ -10,8 +10,6 @@ type Workspace = {
   workspaces: Organization[];
   activeMember: ActiveOrganizationMember | null;
   isSwitchingWorkspace: boolean;
-  // hasImageToken: boolean;
-  // hasSystemToken: boolean;
 };
 
 type ActiveWorkspace = { slug?: string | null; id?: string | null };
@@ -31,8 +29,6 @@ export const useWorkspaceStore = create<Workspace & Actions>()(
       activeMember: null,
       workspaces: [],
       isSwitchingWorkspace: false,
-      // hasImageToken: activeWorkspace?.imageTokenLimit && activeWorkspace.imageTokens > 0,
-      // hasSystemToken: activeWorkspace?.systemTokenLimit && activeWorkspace.systemTokens > 0,
       addActiveMember: (member) => set({ activeMember: member }),
       addActiveWorkspace: (workspace: ActiveOrganization) =>
         set({
