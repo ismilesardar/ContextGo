@@ -67,6 +67,7 @@ model User {
 
   projectApiKeysCreated ProjectApiKey[] @relation("ProjectApiKeyCreatedBy")
   mcpIdentitiesCreated McpIdentity[] @relation("McpIdentityCreatedBy")
+  publicAssetsCreated PublicAsset[] @relation("PublicAssetCreatedBy")
 
   @@unique([email])
   @@map("user")
@@ -507,6 +508,22 @@ model LibraryTemplate {
   @@unique([source, sourcePath])
   @@index([source, sourceCategory])
   @@map("library_template")
+}
+
+model PublicAsset {
+  id           String   @id @default(cuid())
+  resourceType String // "context" | "instruction" | "skill" | "promptTemplate" | "checklist"
+  title        String
+  slug         String   @unique
+  description  String?
+  content      String   @db.Text
+  createdById  String
+  createdBy    User     @relation("PublicAssetCreatedBy", fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([resourceType])
+  @@map("public_asset")
 }
 
 model Checklist {
