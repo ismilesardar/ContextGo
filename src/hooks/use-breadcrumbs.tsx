@@ -23,6 +23,18 @@ const routeMapping: Record<string, BreadcrumbItem[]> = {
   // Add more custom mappings as needed
 };
 
+// Prisma ids are cuids: long lowercase alphanumeric strings. Route slugs
+// (workspace, section names, ...) never look like this, so it's a safe way
+// to spot a dynamic id segment anywhere in the path.
+function isIdSegment(segment: string) {
+  return /^[a-z0-9]{20,}$/i.test(segment);
+}
+
+// "projects" -> "project", "agent-profiles" -> "agent-profile"
+function singularize(segment: string) {
+  return segment.endsWith('s') ? segment.slice(0, -1) : segment;
+}
+
 export function useBreadcrumbs() {
   const pathname = usePathname();
 
@@ -36,8 +48,17 @@ export function useBreadcrumbs() {
     const segments = pathname.split('/').filter(Boolean);
     return segments.map((segment, index) => {
       const path = `/${segments.slice(0, index + 1).join('/')}`;
+
+      // Whatever section of the app an id lands in (projects, checklists,
+      // contexts, ...), label it after the resource it belongs to instead
+      // of showing the raw id.
+      const previousSegment = segments[index - 1];
+      const label = isIdSegment(segment)
+        ? singularize(previousSegment ?? segment)
+        : segment;
+
       return {
-        title: segment.charAt(0).toUpperCase() + segment.slice(1),
+        title: label.charAt(0).toUpperCase() + label.slice(1),
         link: path
       };
     });

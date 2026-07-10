@@ -27,6 +27,7 @@ import {
   viewer
 } from '../permissions/workspace-permissions';
 import { sendOrganizationInviteEmail } from '@/utils/email/organization-invite-email';
+import { welcomeEmail } from '@/utils/email/welcome-email';
 import { creem } from '@creem_io/better-auth';
 
 import { createAuthMiddleware } from 'better-auth/api';
@@ -100,7 +101,14 @@ export const auth = betterAuth({
       await sendMail({
         subject: 'Reset your password',
         receiver: user.email,
-        body: emailVerificationLink(url)
+        body: emailVerificationLink(url, {
+          heading: 'Reset your password',
+          description:
+            'We received a request to reset your password. Use the following link to choose a new one:',
+          buttonText: 'Reset password',
+          expiryNote:
+            'This link will expire in 8 hours. If you did not request a password reset, you can safely ignore this email.'
+        })
       });
     }
   },
@@ -144,7 +152,14 @@ export const auth = betterAuth({
         await sendMail({
           subject: 'Confirm account deletion',
           receiver: user.email,
-          body: emailVerificationLink(url)
+          body: emailVerificationLink(url, {
+            heading: 'Confirm account deletion',
+            description:
+              'We received a request to permanently delete your account. This action cannot be undone. Use the following link to confirm:',
+            buttonText: 'Confirm deletion',
+            expiryNote:
+              'This link will expire in 8 hours. If you did not request this, you can safely ignore this email.'
+          })
         });
       }
     }
@@ -677,7 +692,7 @@ export const auth = betterAuth({
           await sendMail({
             subject: 'Welcome to ' + APP_NAME,
             receiver: user.email,
-            body: `Hi ${user.name || ''},<br/><br/>Welcome to ${APP_NAME}! We're excited to have you on board.<br/><br/>Best regards,<br/>The ${APP_NAME} Team`
+            body: welcomeEmail(user.name || '')
           });
         }
       }

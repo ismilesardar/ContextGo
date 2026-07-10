@@ -22,11 +22,11 @@ import type { McpRequestTrendPoint } from '../utils/use-overview';
 const chartConfig = {
   received: {
     label: 'Received',
-    color: 'var(--chart-1)'
+    color: 'var(--brand-color)'
   },
   sent: {
     label: 'Sent',
-    color: 'var(--chart-2)'
+    color: 'var(--primary)'
   }
 } satisfies ChartConfig;
 
@@ -63,24 +63,24 @@ export function McpRequestTrendChart({
                 <linearGradient id='fillReceived' x1='0' y1='0' x2='0' y2='1'>
                   <stop
                     offset='0%'
-                    stopColor='var(--chart-1)'
+                    stopColor='var(--brand-color)'
                     stopOpacity={0.8}
                   />
                   <stop
                     offset='100%'
-                    stopColor='var(--chart-1)'
+                    stopColor='var(--brand-color)'
                     stopOpacity={0.1}
                   />
                 </linearGradient>
                 <linearGradient id='fillSent' x1='0' y1='0' x2='0' y2='1'>
                   <stop
                     offset='0%'
-                    stopColor='var(--chart-2)'
+                    stopColor='var(--primary)'
                     stopOpacity={0.8}
                   />
                   <stop
                     offset='100%'
-                    stopColor='var(--chart-2)'
+                    stopColor='var(--primary)'
                     stopOpacity={0.1}
                   />
                 </linearGradient>
@@ -116,13 +116,13 @@ export function McpRequestTrendChart({
                 dataKey='received'
                 type='monotone'
                 fill='url(#fillReceived)'
-                stroke='var(--chart-1)'
+                stroke='var(--brand-color)'
               />
               <Area
                 dataKey='sent'
                 type='monotone'
                 fill='url(#fillSent)'
-                stroke='var(--chart-2)'
+                stroke='var(--primary)'
               />
               <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>

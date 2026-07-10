@@ -20,7 +20,7 @@ import type { ActivityTrendPoint } from '../utils/use-overview';
 const chartConfig = {
   count: {
     label: 'Activity',
-    color: 'var(--primary)'
+    color: 'var(--brand-color)'
   }
 } satisfies ChartConfig;
 
@@ -55,12 +55,12 @@ export function ActivityTrendChart({
                 <linearGradient id='fillActivity' x1='0' y1='0' x2='0' y2='1'>
                   <stop
                     offset='0%'
-                    stopColor='var(--primary)'
+                    stopColor='var(--brand-color)'
                     stopOpacity={0.8}
                   />
                   <stop
                     offset='100%'
-                    stopColor='var(--primary)'
+                    stopColor='var(--brand-color)'
                     stopOpacity={0.1}
                   />
                 </linearGradient>
@@ -96,7 +96,7 @@ export function ActivityTrendChart({
                 dataKey='count'
                 type='monotone'
                 fill='url(#fillActivity)'
-                stroke='var(--primary)'
+                stroke='var(--brand-color)'
               />
             </AreaChart>
           </ChartContainer>

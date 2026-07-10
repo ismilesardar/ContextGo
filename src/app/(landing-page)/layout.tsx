@@ -1,3 +1,4 @@
+import { ForceLightTheme } from '@/components/layout/ThemeToggle/force-light-theme';
 import { APP_NAME } from '@/config/url.config';
 import type { Metadata } from 'next';
 
@@ -12,5 +13,5 @@ export default function LandingPageLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <ForceLightTheme>{children}</ForceLightTheme>;
 }

@@ -20,7 +20,7 @@ import type { ResourceBreakdownItem } from '../utils/use-overview';
 const chartConfig = {
   count: {
     label: 'Resources',
-    color: 'var(--primary)'
+    color: 'var(--brand-color)'
   }
 } satisfies ChartConfig;
 
@@ -62,7 +62,7 @@ export function ResourceBreakdownChart({
                 width={110}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey='count' fill='var(--primary)' radius={4} />
+              <Bar dataKey='count' fill='var(--brand-color)' radius={4} />
             </BarChart>
           </ChartContainer>
         )}
