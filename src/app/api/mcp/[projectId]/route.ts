@@ -19,8 +19,25 @@ import { resolveApiKeyGrants } from '@/lib/api/project-api-key/resolve-api-key-g
 import { buildMcpServer } from '@/lib/api/mcp/build-mcp-server';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { requireUnderLimit } from '@/lib/api/plan/require-under-limit';
+import arcjet, {
+  slidingWindow,
+  SlidingWindowRateLimitOptions
+} from '@arcjet/next';
+import { ARCJET_API_KEY } from '@/config/url.config';
 
 type RouteContext = { params: Promise<{ projectId: string }> };
+
+const mcpRateLimitSettings = {
+  mode: 'LIVE',
+  max: 60,
+  interval: '1m'
+} satisfies SlidingWindowRateLimitOptions<['apiKeyId']>;
+
+const aj = arcjet({
+  key: ARCJET_API_KEY!,
+  characteristics: ['apiKeyId'],
+  rules: [slidingWindow(mcpRateLimitSettings)]
+});
 
 async function authenticate(req: Request, projectId: string) {
   const authHeader = req.headers.get('authorization');
@@ -51,6 +68,13 @@ async function authenticate(req: Request, projectId: string) {
   if (apiKey.projectId !== projectId) {
     return {
       error: NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    };
+  }
+
+  const decision = await aj.protect(req, { apiKeyId: apiKey.id });
+  if (decision.isDenied()) {
+    return {
+      error: NextResponse.json({ error: 'Too many requests' }, { status: 429 })
     };
   }
 

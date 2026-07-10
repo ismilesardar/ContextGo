@@ -124,8 +124,8 @@ export async function getWorkspaceOverview(
 
   if (projectIds.length > 0) {
     const trendStart = new Date();
-    trendStart.setDate(trendStart.getDate() - (TREND_DAYS - 1));
-    trendStart.setHours(0, 0, 0, 0);
+    trendStart.setUTCDate(trendStart.getUTCDate() - (TREND_DAYS - 1));
+    trendStart.setUTCHours(0, 0, 0, 0);
 
     const [recentRows, trendRows, mcpRequestRows] = await Promise.all([
       prisma.projectActivity.findMany({
@@ -158,7 +158,7 @@ export async function getWorkspaceOverview(
     const bucket = new Map<string, number>();
     for (let i = 0; i < TREND_DAYS; i++) {
       const d = new Date(trendStart);
-      d.setDate(d.getDate() + i);
+      d.setUTCDate(d.getUTCDate() + i);
       bucket.set(dayKey(d), 0);
     }
     for (const row of trendRows) {
@@ -172,7 +172,7 @@ export async function getWorkspaceOverview(
     const mcpBucket = new Map<string, { received: number; sent: number }>();
     for (let i = 0; i < TREND_DAYS; i++) {
       const d = new Date(trendStart);
-      d.setDate(d.getDate() + i);
+      d.setUTCDate(d.getUTCDate() + i);
       mcpBucket.set(dayKey(d), { received: 0, sent: 0 });
     }
     for (const row of mcpRequestRows) {

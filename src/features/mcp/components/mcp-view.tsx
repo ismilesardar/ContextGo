@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/icons';
 import { BASE_URL } from '@/config/url.config';
 import { useProject } from '@/features/projects/utils/use-projects';
+import { usePlansStore } from '@/store/workspace-store/plan-store';
 import { useProjectMcpIdentities } from '../utils/use-project-mcp-identities';
+import { useProjectApiKeys } from '../utils/use-project-api-keys';
 import { useAddIdentityModal } from './add-identity-modal';
 import { IdentityCard } from './identity-card';
 
@@ -70,6 +72,28 @@ function ConnectionInstructions({ projectId }: { projectId: string }) {
   );
 }
 
+function McpUsageIndicator({
+  used,
+  limit
+}: {
+  used: number;
+  limit: number | undefined;
+}) {
+  if (limit === undefined) return null;
+
+  const atLimit = limit > 0 && used >= limit;
+
+  return (
+    <span
+      className={`text-sm ${
+        atLimit ? 'text-destructive font-medium' : 'text-muted-foreground'
+      }`}
+    >
+      {used} / {limit} MCP keys used
+    </span>
+  );
+}
+
 export function McpView({
   workspaceSlug,
   projectId
@@ -86,18 +110,40 @@ export function McpView({
     workspaceSlug
   });
 
+  const { data: apiKeys } = useProjectApiKeys(projectId);
+  const { activePlan, refreshPlans } = usePlansStore((state) => state);
+  const organizationId = projectData?.project?.organizationId;
+
+  useEffect(() => {
+    if (organizationId) refreshPlans(organizationId);
+  }, [organizationId]);
+
+  const mcpLimit = activePlan?.limits.mcpApiKeys;
+  const projectMcpUsed = apiKeys?.filter((key) => !key.revokedAt).length ?? 0;
+  const atLimit =
+    mcpLimit !== undefined && mcpLimit > 0 && projectMcpUsed >= mcpLimit;
+
   return (
     <PageShell
       title='MCP'
       description="Expose this project's approved knowledge to Claude Code, Cursor, and other AI clients through an MCP server."
       showDate={false}
       actions={
-        canManage && (
-          <Button onClick={() => setShowAddIdentityModal(true)}>
-            <Icons.add className='mr-2 size-4' />
-            Add MCP User
-          </Button>
-        )
+        <div className='flex items-center gap-3'>
+          <McpUsageIndicator used={projectMcpUsed} limit={mcpLimit} />
+          {canManage && (
+            <Button
+              onClick={() => setShowAddIdentityModal(true)}
+              disabled={atLimit}
+              title={
+                atLimit ? "You've reached your plan's MCP key limit" : undefined
+              }
+            >
+              <Icons.add className='mr-2 size-4' />
+              Add MCP User
+            </Button>
+          )}
+        </div>
       }
     >
       <AddIdentityModal />

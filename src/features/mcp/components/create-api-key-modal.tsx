@@ -15,7 +15,6 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Icons } from '@/components/icons';
 import { BASE_URL } from '@/config/url.config';
-import { createSlug } from '@/utils/create-slug';
 import { useCreateProjectApiKey } from '../utils/use-project-api-keys';
 
 function CreateApiKeyModalHelper({
@@ -65,7 +64,7 @@ function CreateApiKeyModalHelper({
     const configSnippet = JSON.stringify(
       {
         mcpServers: {
-          [createSlug(identityName) || 'primiso']: {
+          primiso: {
             type: 'http',
             url: serverUrl,
             headers: {

@@ -8,6 +8,13 @@ All six core Resource types are implemented (Contexts, Instructions, Skills, Pro
 
 ## Current Goal
 
+### MCP endpoint burst rate limiting (this session)
+
+- **User concern**: the MCP Streamable-HTTP endpoint (`src/app/api/mcp/[projectId]/route.ts`) is hit by external clients on every tool call, authenticated via bearer API key rather than a session. The only existing throttle was `requireUnderLimit`'s **monthly** quota (`organization.mcpRequestsLimit`, counted from `mcpRequestLog` rows) — nothing limited burst/rapid-fire calls within a short window, so a compromised key or buggy/malicious client could hammer the endpoint (each call already costs several Postgres round-trips before any MCP logic runs).
+- Confirmed the codebase already has **Arcjet** (`@arcjet/next`, `@arcjet/ip`) installed and used for exactly this in `src/app/api/auth/[...all]/route.ts` (sign-up/sign-in `slidingWindow` rate limiting), with `ARCJET_KEY` already configured (`src/config/url.config.ts`, `.env.example`) — no new infra (Redis/Upstash) needed.
+- Added a `slidingWindow` Arcjet rule to the MCP route, keyed by `apiKeyId` (not IP, since a key is pinned to one IP only after first use and grants may be exercised before that pin exists) — `max: 60`, `interval: '1m'` (confirmed with the user). The check runs in `authenticate()` right after the key is verified/matched to the project, before the monthly-quota DB counts and the `allowedIp`/`lastUsedAt` writes, so a throttled request short-circuits before the more expensive work. Denied requests get a `429`.
+- `pnpm tsc --noEmit` passes with zero errors. **Not yet manually verified** — would need a live test API key hammered with ~70 rapid requests in a minute to confirm the 429 kicks in around request 61 and normal single-call usage is unaffected.
+
 ### Real in-app subscription upgrade/downgrade with proration (this session)
 
 - **Problem**: "Upgrade" always opened a brand-new Creem-hosted checkout for the target plan's product, never touching the customer's existing subscription (so proration behavior was whatever Creem's checkout flow does implicitly — undocumented, and the old subscription wasn't referenced/canceled). "Downgrade" just opened Creem's hosted customer portal with no target plan communicated. Investigated whether this project uses Stripe (it doesn't, despite `stripe` sitting in `package.json` — billing is 100% Creem via `@creem_io/better-auth`) and whether Creem itself has a real update-in-place + proration primitive (it does: `creem.subscriptions.upgrade(subscriptionId, { productId, updateBehavior })`, part of the `creem` npm package which is already a transitive dep, already imported directly in `src/app/api/billing/invoices/route.ts`).

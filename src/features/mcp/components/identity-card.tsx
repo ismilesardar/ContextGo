@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/icons';
 import { BASE_URL } from '@/config/url.config';
-import { createSlug } from '@/utils/create-slug';
 import { useEditIdentityGrantsModal } from './edit-identity-grants-modal';
 import { useRemoveIdentityModal } from './remove-identity-modal';
 import { useCreateApiKeyModal } from './create-api-key-modal';
@@ -43,7 +42,7 @@ export function IdentityCard({
     const configSnippet = JSON.stringify(
       {
         mcpServers: {
-          [createSlug(identity.name) || 'primiso']: {
+          primiso: {
             type: 'http',
             url: serverUrl,
             headers: {
