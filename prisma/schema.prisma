@@ -69,6 +69,8 @@ model User {
   mcpIdentitiesCreated McpIdentity[] @relation("McpIdentityCreatedBy")
   publicAssetsCreated PublicAsset[] @relation("PublicAssetCreatedBy")
 
+  feedback Feedback[]
+
   @@unique([email])
   @@map("user")
 }
@@ -719,4 +721,16 @@ model ContactMessage {
 
   @@index([createdAt])
   @@map("contact_messages")
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("feedback")
 }

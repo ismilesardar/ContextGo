@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { APP_NAME } from '@/config/url.config';
 
-const SUPPORT_EMAIL = 'support@primiso.app';
+const SUPPORT_EMAIL = 'primiso.help@gmail.com';
 
 export const TermsView = () => {
   return (

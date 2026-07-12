@@ -167,6 +167,15 @@ export const systemAdminNavItems: NavItems[] = [
         isAdmin: true,
         shortcut: ['sm', 'sm'],
         items: []
+      },
+      {
+        title: 'Feedback',
+        url: '/system-admin/feedback',
+        icon: 'feedback',
+        isActive: false,
+        isAdmin: true,
+        shortcut: ['sf', 'sf'],
+        items: []
       }
     ]
   }

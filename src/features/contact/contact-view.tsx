@@ -199,10 +199,10 @@ export function ContactView() {
               <div className='text-muted-foreground mt-8 text-center text-sm'>
                 Or email us directly at{' '}
                 <a
-                  href='mailto:support@primiso.app'
+                  href='mailto:primiso.help@gmail.com'
                   className='text-foreground hover:text-foreground/80 font-medium underline underline-offset-2'
                 >
-                  support@primiso.app
+                  primiso.help@gmail.com
                 </a>
               </div>
             </motion.div>

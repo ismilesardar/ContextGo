@@ -23,6 +23,7 @@ import { logoSingle } from '@/config/image-url';
 import Image from 'next/image';
 import { APP_NAME } from '@/config/url.config';
 import { ModeToggle } from './ThemeToggle/theme-toggle';
+import { FeedbackButton } from './feedback/feedback-button';
 import { ImpersonationIndicator } from '../auth/impersonation-indicator';
 import { WorkspaceAction } from '@/features/app-sidebar/components/workspace-action';
 import { SideNavItems } from '@/features/app-sidebar/components/side-nav-items';
@@ -165,6 +166,7 @@ export function AppSidebar() {
 
           <div className='flex flex-col items-center gap-2'>
             <ImpersonationIndicator />
+            <FeedbackButton />
             <ModeToggle />
 
             <UserDropdown />
