@@ -30,11 +30,13 @@ import { sendOrganizationInviteEmail } from '@/utils/email/organization-invite-e
 import { welcomeEmail } from '@/utils/email/welcome-email';
 import { creem } from '@creem_io/better-auth';
 
-import { createAuthMiddleware } from 'better-auth/api';
+import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { FREE_PLAN_DEFAULTS } from '@/utils/constants/pricing/pricing-plan-taglines';
 import { recordAuditLog } from '../api/audit-logs/record-audit-log';
 import prisma from '../prisma';
 import { applyPlanToOrganization } from '@/lib/billing/apply-plan-to-organization';
+import { getActiveCreemSubscription } from '@/lib/billing/creem-client';
+import { deleteFile } from '@/lib/storage/b2-client';
 
 /**
  * Resolve the plan name for a subscription event. Prefers the live product
@@ -271,6 +273,19 @@ export const auth = betterAuth({
             }
           });
         },
+        async beforeDeleteOrganization(data) {
+          const creemId = (data.organization as { creemId?: string | null })
+            .creemId;
+          if (!creemId) return;
+
+          const activeSubscription = await getActiveCreemSubscription(creemId);
+          if (activeSubscription) {
+            throw new APIError('BAD_REQUEST', {
+              message:
+                'Cancel your active subscription before deleting this workspace.'
+            });
+          }
+        },
         async afterDeleteOrganization(data) {
           const orgId = data.organization.id;
 
@@ -278,6 +293,26 @@ export const auth = betterAuth({
             await prisma.audit.deleteMany({ where: { workspaceId: orgId } });
           } catch (err) {
             console.error('Failed to clean up workspace data:', err);
+          }
+
+          try {
+            await prisma.subscription.deleteMany({
+              where: { referenceId: orgId }
+            });
+            await prisma.creem_subscription.deleteMany({
+              where: { referenceId: orgId }
+            });
+          } catch (err) {
+            console.error('Failed to clean up workspace billing rows:', err);
+          }
+
+          const logo = (data.organization as { logo?: string | null }).logo;
+          if (logo) {
+            try {
+              await deleteFile(logo);
+            } catch (err) {
+              console.error('Failed to delete workspace logo from B2:', err);
+            }
           }
 
           await prisma.user.updateMany({
