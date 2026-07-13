@@ -130,7 +130,7 @@ export default function Navbar() {
                 href='/help'
                 className='text-muted-foreground hover:text-foreground text-sm font-medium transition-colors'
               >
-                Documentation
+                Docs
               </Link>
             </div>
             <div className='flex items-center gap-4'>
@@ -236,7 +236,7 @@ export default function Navbar() {
                 className='text-muted-foreground hover:text-foreground py-2 text-base font-medium transition-colors'
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Documentation
+                Docs
               </Link>
 
               <div className='bg-border my-2 h-px' />

@@ -2,6 +2,7 @@ import {
   Navbar,
   Hero,
   TrustedBy,
+  WorksWithAI,
   FeatureGrid,
   HowItWorks,
   UseCases,
@@ -27,8 +28,9 @@ const LandingPage = async () => {
       <Navbar />
       <div className='bg-background mt-20 h-[calc(100%-5rem)] overflow-x-hidden overflow-y-auto'>
         <Hero />
-        <TrustedBy />
+        <WorksWithAI />
         <FeatureGrid />
+        <TrustedBy />
         <HowItWorks />
         <UseCases />
         <CTA />

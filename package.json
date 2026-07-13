@@ -121,6 +121,7 @@
     "react-responsive": "^10.0.0",
     "recharts": "^2.15.1",
     "remark-gfm": "^4.0.1",
+    "simple-icons": "^16.26.0",
     "sonner": "^1.7.1",
     "sort-by": "^1.2.0",
     "stripe": "^20.4.1",

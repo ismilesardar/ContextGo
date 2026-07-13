@@ -42,7 +42,7 @@ export default function BoxDesign({
                   <path d='M2 12l10 5 10-5' />
                 </svg>
               </div>
-              <span className='text-foreground text-lg font-bold tracking-tight'>
+              <span className='text-foreground text-lg font-bold tracking-tight uppercase'>
                 {APP_NAME}
               </span>
             </Link>

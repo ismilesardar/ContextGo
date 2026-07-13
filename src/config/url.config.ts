@@ -27,20 +27,3 @@ export const S3_BUCKET = process.env.S3_BUCKET as string;
 
 // ARCJET KEY
 export const ARCJET_API_KEY = process.env.ARCJET_KEY as string;
-
-// stripe
-export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY as string;
-export const STRIPE_WEBHOOK_SECRET = process.env
-  .STRIPE_WEBHOOK_SECRET as string;
-export const STRIPE_PUBLISHABLE_KEY = process.env
-  .STRIPE_PUBLISHABLE_KEY as string;
-
-// stripe price ids
-export const STRIPE_BASIC_MONTHLY_PRICE_ID = process.env
-  .STRIPE_BASIC_MONTHLY_PRICE_ID as string;
-export const STRIPE_BASIC_ANNUAL_PRICE_ID = process.env
-  .STRIPE_BASIC_ANNUAL_PRICE_ID as string;
-export const STRIPE_PRO_MONTHLY_PRICE_ID = process.env
-  .STRIPE_PRO_MONTHLY_PRICE_ID as string;
-export const STRIPE_PRO_ANNUAL_PRICE_ID = process.env
-  .STRIPE_PRO_ANNUAL_PRICE_ID as string;

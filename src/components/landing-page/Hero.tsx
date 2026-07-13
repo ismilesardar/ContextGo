@@ -15,11 +15,18 @@ import {
 import { APP_NAME } from '@/config/url.config';
 import HeroNetworkDiagram from './HeroNetworkDiagram';
 
-// Placeholder destinations — swap for real profile URLs once they exist.
 const SOCIAL_LINKS = [
-  { icon: Linkedin, label: 'LinkedIn', href: '#' },
-  { icon: Facebook, label: 'Facebook', href: '#' },
-  { icon: X, label: 'X (Twitter)', href: '#' }
+  {
+    icon: Linkedin,
+    label: 'LinkedIn',
+    href: 'https://www.linkedin.com/company/primiso-top'
+  },
+  {
+    icon: Facebook,
+    label: 'Facebook',
+    href: 'https://www.facebook.com/share/19G9KbSJo6/'
+  },
+  { icon: X, label: 'X (Twitter)', href: 'https://x.com/primisopro' }
 ];
 
 export default function Hero() {
@@ -166,6 +173,8 @@ export default function Hero() {
                     key={social.label}
                     href={social.href}
                     aria-label={social.label}
+                    target='_blank'
+                    rel='noopener noreferrer'
                     className='border-border text-muted-foreground hover:border-primary/30 hover:text-primary flex h-8 w-8 items-center justify-center rounded-full border transition-colors'
                   >
                     <social.icon className='h-3.5 w-3.5' />
